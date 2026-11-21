@@ -22,6 +22,7 @@ import {
 import { loadDraft, saveDraft, clearDraft } from './storage.js'
 import { buildPayload, summaryRows, mailtoHref } from './summary.js'
 import { hasBackend, submitBooking } from '../api.js'
+import { buildIcs, icsHref } from './ics.js'
 
 const TEXT_FIELDS = ['address', 'city', 'zip', 'miles', 'date', 'name', 'phone', 'email', 'notes']
 const TIME_PREFS = ['morning', 'afternoon', 'either']
@@ -501,6 +502,20 @@ export function initBooking(mount) {
     const rows = summaryRows(state)
     const mailto = mailtoHref(state)
 
+    // A calendar entry for the requested visit. TENTATIVE, because submitting
+    // the form is a request and Michael confirms it by phone — a calendar
+    // event claiming a confirmed slot would be the same lie the copy rules
+    // forbid everywhere else. Null when no date was given, in which case the
+    // button below is simply not rendered.
+    const ics = buildIcs({
+      date: payload.schedule?.preferredDate,
+      timePref: payload.schedule?.timePreference,
+      summary: rows.find((r) => /job|service/i.test(r.label || ''))?.value || 'Pond visit',
+      details: rows.map((r) => `${r.label}: ${r.value}`).join('\n'),
+      location: [payload.location?.address, payload.location?.city, payload.location?.zip]
+        .filter(Boolean).join(', '),
+    })
+
     doneEl.innerHTML = `
       <p class="eyebrow">Booking request ready</p>
       <h3 class="bk-done__h">Thanks, ${esc(state.name.trim().split(/\s+/)[0] || 'friend')} — here is exactly what you asked for.</h3>
@@ -529,6 +544,7 @@ export function initBooking(mount) {
         <div class="bk-done__acts">
           <a class="btn" href="${esc(mailto)}">Email this booking to ${esc(BRAND.email)}</a>
           <a class="btn btn--brass" href="${esc(BRAND.phoneHref)}">Call ${esc(BRAND.phone)}</a>
+          ${ics ? `<a class="btn btn--brass btn--sm" href="${esc(icsHref(ics))}" download="koi-wrangler-visit.ics">Add to calendar</a>` : ''}
         </div>
         <p class="bk-fine">${esc(BRAND.hours)}. If the email button does nothing, your device has no mail app set up — call or copy the summary above instead.</p>
       </div>`
