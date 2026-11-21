@@ -145,6 +145,7 @@ export function initPond ({ canvas }) {
    * weighted by submergence so the above-water shots keep their night sky.
    */
   const tintColor = new THREE.Color()
+  const projected = new THREE.Vector3()
   function applyStoryMood () {
     const m = stage.mood
     const s = stage.submergence
@@ -184,5 +185,34 @@ export function initPond ({ canvas }) {
     stage.dispose()
   }
 
-  return { setStory, setScrollProgress, dispose, ready, stage, quality }
+  /**
+   * Where each visible koi currently is on screen, and what variety it is.
+   *
+   * Returned in CSS pixels relative to the canvas, so a DOM layer can label
+   * the fish without knowing anything about three.js. Fish behind the camera,
+   * off-screen, or faded out by `koiPresence` are omitted — a label pointing
+   * at a fish nobody can see is worse than no label.
+   */
+  function getKoiLabels () {
+    const out = []
+    const w = canvas.clientWidth || 1
+    const h = canvas.clientHeight || 1
+    for (const f of koi.fish || []) {
+      if (!f.mesh?.visible) continue
+      const opacity = f.material?.opacity ?? 1
+      if (opacity < 0.3) continue            // mid-fade, not worth naming
+      f.mesh.getWorldPosition(projected)
+      projected.project(stage.camera)
+      if (projected.z > 1) continue          // behind the lens
+      const x = (projected.x * 0.5 + 0.5) * w
+      const y = (-projected.y * 0.5 + 0.5) * h
+      if (x < 0 || x > w || y < 0 || y > h) continue
+      out.push({ variant: f.variant, x, y, depth: projected.z, opacity, size: f.size })
+    }
+    // Nearest first, so a caller showing only one or two picks the ones that
+    // actually read.
+    return out.sort((a, b) => a.depth - b.depth)
+  }
+
+  return { setStory, setScrollProgress, dispose, ready, stage, quality, getKoiLabels }
 }

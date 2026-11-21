@@ -1003,6 +1003,9 @@ export function createKoiSchool ({ quality }) {
       uniforms,
       material,
       size,
+      // Kept so the page can name the fish swimming behind it — see
+      // getKoiLabels() in index.js.
+      variant,
       curve: makePath(rand, i, count),
       u: (i / count) + rand() * 0.08,
       length: 1,
