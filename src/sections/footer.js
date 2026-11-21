@@ -1,10 +1,13 @@
-import { BRAND } from '../data/content.js'
+import { BRAND, FOOTER_QUIPS } from '../data/content.js'
 import { NAV } from './header.js'
 import { markKoiLasso } from './svg.js'
 
 export function renderFooter() {
   const year = new Date().getFullYear()
   const [lineA, lineB] = BRAND.nameStacked
+  // One at random per load. The site's joke is about the site, never about
+  // anybody who works here.
+  const quip = FOOTER_QUIPS[Math.floor(Math.random() * FOOTER_QUIPS.length)]
 
   return `
 <footer class="sx-footer" aria-label="Site footer">
@@ -55,6 +58,7 @@ export function renderFooter() {
 
   <div class="wrap sx-footer__base">
     <p>&copy; ${year} ${BRAND.name}</p>
+    <p class="sx-footer__quip">${quip}</p>
     <p><a href="#top">Back to the top</a></p>
   </div>
 </footer>`

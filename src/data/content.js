@@ -53,6 +53,7 @@ export const ABOUT = {
     'I do the hard, dirty, physical part: get the water out, get the muck out, get the algae off the rocks, handle your fish gently with the right nets and an aerated holding tank, and put everything back the way it should be. I quote it up front, I show up when I said, and if I break something I replace it.',
     'I am careful, insured, and honest about my own limits, which is more than you can say for some of the operations that will quote you over the phone sight-unseen.',
     'Where something is beyond me, I will say so and tell you who to call, rather than guessing with a fish worth more than the job.',
+    'You may be wondering why a one-man pond cleaning operation has a website with a scroll-synchronised underwater camera and eight individually patterned koi rendered in real time. So am I. It seemed important at the time.',
   ],
   signature: '— Michael, owner',
 }
@@ -72,8 +73,22 @@ export const FAQ = [
     a: 'Then I stop and tell you, with a number, before any extra work happens. The booking price assumes a normal pond for its size. Genuine surprises — a cracked liner, a dead pump, four years of leaf mulch — get quoted on the spot and you can say no.' },
   { q: 'Are you insured?',
     a: 'Yes, general liability. Certificate available on request before I set foot on your property.' },
+  { q: 'Why is this website like this?',
+    a: 'I asked for a website. Things got away from us. The pond you have been scrolling through cleans itself as you read, which is more than I can say for yours.' },
   { q: 'Do you clean anything besides koi ponds?',
     a: 'Water features, fountains, goldfish ponds, farm troughs — yes. Swimming pools — no, wrong trade entirely.' },
+]
+
+/**
+ * Footer quips. The joke this site is allowed to make is about ITSELF — a
+ * plain one-man business with an absurdly over-built website — never about
+ * anybody who works here. One is picked at random per load.
+ */
+export const FOOTER_QUIPS = [
+  'No koi were consulted in the making of this website.',
+  'This website contains more fish than Michael has cleaned.',
+  'Absurdly over-engineered for a man with a bucket.',
+  'The pond above is rendered in real time. The muck in yours is not.',
 ]
 
 export const AREA = {
