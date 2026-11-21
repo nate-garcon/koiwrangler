@@ -45,3 +45,33 @@ carries **no** testimonials, review counts or awards. It sells what is true:
 shows up on time, prices up front, does the heavy filthy work, and says plainly
 what he does not know. Do not "improve" the copy by adding credentials or
 social proof. See the comment at the top of `src/data/content.js`.
+
+## Backend (optional)
+
+The site is static and works with no backend at all — the booking form and the
+shop fall back to prefilled `mailto:` links. `server/index.js` adds the live
+paths when you want them. It is dependency-free (Node 22+ fetch/crypto/http).
+
+```bash
+cp .env.example .env     # fill in what you have; everything is optional
+npm run server           # http://127.0.0.1:8787
+```
+
+Then rebuild the site pointing at it:
+
+```bash
+VITE_API_BASE=https://your-api-host npm run build
+```
+
+| Capability | Needs | Without it |
+|---|---|---|
+| Card payment | `STRIPE_SECRET_KEY` | "Pay by card" stays hidden; email-the-order remains |
+| Promo codes | Stripe promotion codes | n/a — entered on Stripe's checkout page |
+| Admin page | Google OAuth + `SESSION_SECRET` + `ADMIN_EMAILS` | `/admin.html` explains it isn't connected |
+| Booking/order pings | `NOTIFY_WEBHOOK_URL` | Logged to stdout |
+
+Prices are **never** taken from the browser: `/api/checkout` receives ids and
+quantities and looks every price up from `src/data/supplies.js` server-side.
+Sessions are HMAC-signed HttpOnly cookies — there is no password to leak and
+no user table. Stripe webhooks are signature-verified with a 5-minute replay
+window. Deploy with `fly deploy` (see `fly.toml`) or any Docker host.

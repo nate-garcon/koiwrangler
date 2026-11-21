@@ -21,6 +21,7 @@ import {
 } from './validate.js'
 import { loadDraft, saveDraft, clearDraft } from './storage.js'
 import { buildPayload, summaryRows, mailtoHref } from './summary.js'
+import { hasBackend, submitBooking } from '../api.js'
 
 const TEXT_FIELDS = ['address', 'city', 'zip', 'miles', 'date', 'name', 'phone', 'email', 'notes']
 const TIME_PREFS = ['morning', 'afternoon', 'either']
@@ -457,17 +458,11 @@ export function initBooking(mount) {
     const payload = buildPayload(state)
 
     /* ====================================================================
-       TODO(backend): this is the ONE place a real submission goes.
-       Replace the console.info below with a POST to a form service
-       (Formspree / Basin / a Netlify function / Michael's CRM), keep the
-       success panel for the 2xx case, and show a retry message plus the
-       phone number on failure. Nothing else in this module needs to change.
-
-         await fetch('/api/booking', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify(payload),
-         })
+       The real submission. When VITE_API_BASE is set at build time this
+       POSTs to the backend, which stores the booking and pings Michael and
+       Eddie. With no backend configured (the static GitHub Pages build) it
+       stays exactly as it was: the success panel below carries a prefilled
+       mailto: and the phone number, so the booking is never lost.
 
        payload shape (all money in integer CENTS, USD):
          submittedAt                        ISO timestamp
@@ -491,7 +486,16 @@ export function initBooking(mount) {
          quote.monthlyTotalCents            null in 'custom' mode
          quote.hourlyLabour                 set only in 'emergency' mode
        ==================================================================== */
-    console.info('[booking] submission payload (no backend yet):', payload)
+    if (hasBackend()) {
+      // Deliberately not awaited before showing the success panel: the
+      // customer has done their part, and the mailto fallback in that panel
+      // covers us if the request fails. Never strand them on a spinner.
+      submitBooking(payload).catch((err) => {
+        console.warn('[booking] backend submit failed, mailto fallback stands:', err.message)
+      })
+    } else {
+      console.info('[booking] no backend configured; mailto fallback is the path:', payload)
+    }
 
     const q = computeQuote(state)
     const rows = summaryRows(state)

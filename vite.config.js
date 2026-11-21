@@ -15,6 +15,8 @@ export default defineConfig({
     // three.js is ~85% of the bundle and changes far less often than the site
     // does. Splitting it lets a returning visitor reuse it across deploys.
     rollupOptions: {
+      // Two pages: the site, and the admin tool behind Google sign-in.
+      input: { main: 'index.html', admin: 'admin.html' },
       output: {
         manualChunks: (id) => (id.includes('node_modules/three') ? 'three' : undefined),
       },

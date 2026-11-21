@@ -17,11 +17,13 @@ export const BRAND = {
   name: 'The Koi Wrangler',
   nameStacked: ['The Koi', 'Wrangler'],
   tagline: 'Pond cleaning, done honest.',
-  phone: '(555) 014-5647',
-  phoneHref: 'tel:+15550145647',
-  email: 'howdy@koiwrangler.com',
+  phone: '(555) 017-3042',
+  phoneHref: 'tel:+15550173042',
+  email: 'book@koiwrangler.com',
   area: `Statewide — first ${FREE_MI} miles free`,
   hours: 'Mon – Sat, 7am – 6pm',
+  // Eddie handles anything to do with the fish themselves.
+  specialist: { name: 'Eddie', role: 'koi specialist', email: 'eddie@koiwrangler.com' },
 }
 
 export const HERO = {
@@ -41,27 +43,27 @@ export const PROMISES = [
     body: 'Pick your pond size and see the number before you ever talk to me. No "it depends" games.' },
   { icon: 'wader', emoji: '💪', title: 'I do the filthy part',
     body: 'Waders on, muck out, scrub the rocks. This is labour you do not want to do on a Saturday.' },
-  { icon: 'ledger', emoji: '🤝', title: 'I tell you what I do not know',
-    body: 'I am new to koi. I am good at cleaning. If your fish looks sick I will say so and point you to a vet or a breeder instead of guessing with your $2,000 fish.' },
+  { icon: 'ledger', emoji: '🤝', title: 'The fish side is Eddie\u2019s',
+    body: 'I am good at cleaning, and I do not pretend to be a koi expert. Eddie is our koi specialist and he handles anything to do with the fish themselves. Between us you get a straight answer instead of a guess.' },
 ]
 
 export const ABOUT = {
   eyebrow: 'Straight talk',
-  title: 'New business. Old-fashioned about it.',
+  title: 'Two of us. One does the muck, one knows the fish.',
   body: [
-    'I am Michael, and The Koi Wrangler is a new outfit — so let me be upfront about what that means for you.',
-    'I am not a koi expert yet. I am not going to diagnose a sick fish, prescribe medication, or pretend I have twenty years behind me. What I am is strong, careful, insured, and honest about my own limits, which is more than you can say for some of the operations that will quote you over the phone sight-unseen.',
-    'What I do is the hard, dirty, physical work a pond needs: get the water out, get the muck out, get the algae off the rocks, handle your fish gently with the right nets and an aerated holding tank, and put everything back the way it should be. I quote it up front, I show up when I said, and if I break something I replace it.',
-    'I am learning the fish side properly — reading, shadowing breeders, and I will put real credentials on this page the day I actually hold them. Not before.',
+    'I am Michael, and The Koi Wrangler is a new outfit — so let me be upfront about how it works.',
+    'I do the hard, dirty, physical part: get the water out, get the muck out, get the algae off the rocks, handle your fish gently with the right nets and an aerated holding tank, and put everything back the way it should be. I quote it up front, I show up when I said, and if I break something I replace it.',
+    'What I am not is a koi expert, and I will not pretend to be one. That is why Eddie is here. He is our koi specialist and the fish themselves are his department — health, handling, what the water chemistry is doing to them, whether that mark on your prize kohaku is worth worrying about.',
+    'Between the two of us you get a clean pond and a straight answer. Where neither of us knows, we will say so and tell you who does, rather than guessing with a fish worth more than the job.',
   ],
-  signature: '— Michael, owner & the only employee',
+  signature: '— Michael, owner · with Eddie, koi specialist',
 }
 
 export const FAQ = [
   { q: 'Will you hurt my koi?',
     a: 'Nets matter more than skill here: I use soft knotless nets that do not strip their protective slime coat, move them into a tank of their own pond water with an air stone, match temperature before they go back, and count heads in and out. No chasing, no buckets, no sudden temperature swings.' },
   { q: 'Can you tell me why my fish is sick?',
-    a: 'No, and I will not pretend otherwise. I can tell you your water chemistry is off, because I test it. For anything on the fish itself — ulcers, flashing, gasping, white spots — you want a koi vet or an experienced breeder, and I will happily give you names.' },
+    a: 'Ask Eddie — the fish are his department, not mine. He will look at the animal and at what the water chemistry is doing to it, and tell you straight whether it is something we can sort out or something that needs a koi vet. If it is beyond us, you get the name of someone better rather than a guess.' },
   { q: 'How often does a pond need a full clean?',
     a: 'Most backyard koi ponds want one full deep clean a year, usually spring, plus ongoing upkeep in between. If the bottom muck is more than an inch deep or the water smells like a ditch, it is time.' },
   { q: 'Do I have to sign a contract for monthly keeping?',

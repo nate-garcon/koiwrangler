@@ -11,6 +11,7 @@ import { BRAND } from '../data/content.js'
 import { createCart, MAX_QTY, supplyById } from './cart.js'
 import { fmtCents } from './money.js'
 import { icon } from '../sections/svg.js'
+import { hasBackend, probe, startCheckout } from '../api.js'
 
 const esc = (s) =>
   String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
@@ -201,11 +202,12 @@ export function initShop(mount) {
       </dl>
       ${toFree}
       <div class="sh-cart__acts">
+        <button type="button" class="btn btn--koi sh-cart__pay" data-act="checkout" hidden>Pay by card</button>
         <button type="button" class="btn sh-cart__primary" data-act="to-booking">Add to my next visit</button>
         <a class="btn btn--brass btn--sm" data-act="mailto" href="${esc(orderMailto())}">Email the order instead</a>
         <button type="button" class="btn btn--sm sh-btn--quiet" data-act="clear">Empty the cart</button>
       </div>
-      <p class="sh-cart__note">
+      <p class="sh-cart__note" data-role="pay-note">
         ${esc(SHOP_POLICY.pickup)} Nothing is charged on this website — I invoice the supplies with the visit, or reply with how to pay before posting anything.
       </p>
       <p class="sh-cart__note">${esc(SHOP_POLICY.note)}</p>`
@@ -380,6 +382,29 @@ export function initShop(mount) {
         say(`${item ? item.name : 'Item'} removed.`)
         break
       }
+      case 'checkout': {
+        // Send ids and quantities only. The server looks every price up from
+        // src/data/supplies.js — a browser must never be able to name its
+        // own price, and Stripe's own promotion codes handle discounts.
+        const items = cart.lines().map((l) => ({ id: l.id, qty: l.qty }))
+        if (!items.length) return
+        el.disabled = true
+        const original = el.textContent
+        el.textContent = 'Taking you to checkout…'
+        startCheckout(items)
+          .then(({ url }) => { window.location.href = url })
+          .catch((err) => {
+            console.warn('[shop] checkout failed:', err.message)
+            el.disabled = false
+            el.textContent = original
+            const note = drawer.querySelector('[data-role="pay-note"]')
+            if (note) {
+              note.textContent = 'Card payment is not available right now — use "Email the order instead" and I will reply with how to pay.'
+            }
+          })
+        return
+      }
+
       case 'clear':
         cart.clear()
         say('Cart emptied.')
@@ -422,4 +447,18 @@ export function initShop(mount) {
 
   selectTab(0, { announce: false })
   render()
+
+  // Only offer card payment when the backend says Stripe is actually live.
+  // A "Pay by card" button that 503s is worse than no button at all.
+  if (hasBackend()) {
+    probe().then((info) => {
+      if (!info?.configured?.stripe) return
+      const pay = drawer.querySelector('[data-act="checkout"]')
+      if (pay) pay.hidden = false
+      const note = drawer.querySelector('[data-role="pay-note"]')
+      if (note) {
+        note.textContent = `${SHOP_POLICY.pickup} Card payments are handled by Stripe — promo codes can be entered at checkout.`
+      }
+    }).catch(() => {})
+  }
 }
