@@ -534,9 +534,14 @@ export function createParticles ({ quality }) {
       u.uTime.value = at
       u.uFogDensity.value = fogDensity
       u.uCamPos.value.copy(stage.camera.position)
-      // God-rays need water to travel through: nearly nothing in the murk,
-      // then they strengthen as it clears and bloom into dawn.
-      u.uOpacity.value = s * (0.045 + 0.20 * eased.clarity) * (0.85 + 0.85 * eased.dawn)
+      /* God-rays need water to travel through: nearly nothing in the murk,
+         then they strengthen as it clears and bloom into dawn.
+         Held well below where they want to sit, because six additive cone
+         SHELLS overlap: at dawn the old curve (peaking at 0.42) stopped being
+         shafts and became a flat milky wash over the whole lower frame — the
+         single biggest reason the morning beat read as a lit pool rather than
+         a pond. Shafts have to be things you can count, not a fog. */
+      u.uOpacity.value = s * (0.030 + 0.120 * eased.clarity) * (0.85 + 0.45 * eased.dawn)
       u.uColor.value.copy(SHAFT_CLEAN).lerp(SHAFT_MURK, eased.cold).lerp(SHAFT_DAWN, eased.dawn)
       // Dawn light comes in steeper and wider than lantern light does.
       const widen = 1 + 0.22 * eased.dawn

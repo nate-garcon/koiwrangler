@@ -114,10 +114,25 @@ export function resolveRanges (doc = document) {
 
   // The first chapter always owns the top of the document, and starts must
   // increase — a short section can otherwise sort behind the one before it.
+  //
+  // MIN_SPAN is doing real narrative work, not just guarding against overlap.
+  // Anchors alone pace the story by section HEIGHT, and the hero is only one
+  // viewport of an 11,500px document — which put the entire `dusk` chapter in
+  // the first 3% of scroll and left `dive` too short to read as a beat at all.
+  // Every chapter is guaranteed a readable share of the scroll; sections
+  // longer than that still get their extra length.
+  const MIN_SPAN = 0.11
   starts[0].start = 0
   for (let i = 1; i < starts.length; i++) {
-    const floor = starts[i - 1].start + 0.02
+    const floor = starts[i - 1].start + MIN_SPAN
     if (starts[i].start < floor) starts[i].start = floor
+  }
+  // If the floors pushed the tail past the end, scale the whole run back in
+  // proportionally rather than crushing the last chapter against the bottom.
+  const lastStart = starts[starts.length - 1].start
+  if (lastStart > 1 - MIN_SPAN) {
+    const k = (1 - MIN_SPAN) / lastStart
+    for (let i = 1; i < starts.length; i++) starts[i].start *= k
   }
   // If clamping pushed the tail past the end, redistribute what's left evenly.
   if (starts[starts.length - 1].start > 0.96) {
