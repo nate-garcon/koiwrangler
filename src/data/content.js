@@ -22,8 +22,6 @@ export const BRAND = {
   email: 'book@koiwrangler.com',
   area: `Statewide — first ${FREE_MI} miles free`,
   hours: 'Mon – Sat, 7am – 6pm',
-  // Eddie handles anything to do with the fish themselves.
-  specialist: { name: 'Eddie', role: 'koi specialist', email: 'eddie@koiwrangler.com' },
 }
 
 export const HERO = {
@@ -43,27 +41,27 @@ export const PROMISES = [
     body: 'Pick your pond size and see the number before you ever talk to me. No "it depends" games.' },
   { icon: 'wader', emoji: '💪', title: 'I do the filthy part',
     body: 'Waders on, muck out, scrub the rocks. This is labour you do not want to do on a Saturday.' },
-  { icon: 'ledger', emoji: '🤝', title: 'The fish side is Eddie\u2019s',
-    body: 'I am good at cleaning, and I do not pretend to be a koi expert. Eddie is our koi specialist and he handles anything to do with the fish themselves. Between us you get a straight answer instead of a guess.' },
+  { icon: 'ledger', emoji: '🤝', title: 'I tell you what I do not know',
+    body: 'I am good at cleaning. If something is beyond me I will say so and point you to someone who knows, instead of guessing with a fish worth more than the job.' },
 ]
 
 export const ABOUT = {
   eyebrow: 'Straight talk',
-  title: 'Two of us. One does the muck, one knows the fish.',
+  title: 'New business. Old-fashioned about it.',
   body: [
-    'I am Michael, and The Koi Wrangler is a new outfit — so let me be upfront about how it works.',
+    'I am Michael, and The Koi Wrangler is a new outfit — so let me be upfront about what that means for you.',
     'I do the hard, dirty, physical part: get the water out, get the muck out, get the algae off the rocks, handle your fish gently with the right nets and an aerated holding tank, and put everything back the way it should be. I quote it up front, I show up when I said, and if I break something I replace it.',
-    'What I am not is a koi expert, and I will not pretend to be one. That is why Eddie is here. He is our koi specialist and the fish themselves are his department — health, handling, what the water chemistry is doing to them, whether that mark on your prize kohaku is worth worrying about.',
-    'Between the two of us you get a clean pond and a straight answer. Where neither of us knows, we will say so and tell you who does, rather than guessing with a fish worth more than the job.',
+    'I am careful, insured, and honest about my own limits, which is more than you can say for some of the operations that will quote you over the phone sight-unseen.',
+    'Where something is beyond me, I will say so and tell you who to call, rather than guessing with a fish worth more than the job.',
   ],
-  signature: '— Michael, owner · with Eddie, koi specialist',
+  signature: '— Michael, owner',
 }
 
 export const FAQ = [
   { q: 'Will you hurt my koi?',
     a: 'Nets matter more than skill here: I use soft knotless nets that do not strip their protective slime coat, move them into a tank of their own pond water with an air stone, match temperature before they go back, and count heads in and out. No chasing, no buckets, no sudden temperature swings.' },
   { q: 'Can you tell me why my fish is sick?',
-    a: 'Ask Eddie — the fish are his department, not mine. He will look at the animal and at what the water chemistry is doing to it, and tell you straight whether it is something we can sort out or something that needs a koi vet. If it is beyond us, you get the name of someone better rather than a guess.' },
+    a: 'I can tell you what your water chemistry is doing, because I test it. For anything on the fish itself — ulcers, flashing, gasping, white spots — you want a koi vet or an experienced breeder, and I will happily give you names rather than guess.' },
   { q: 'How often does a pond need a full clean?',
     a: 'Most backyard koi ponds want one full deep clean a year, usually spring, plus ongoing upkeep in between. If the bottom muck is more than an inch deep or the water smells like a ditch, it is time.' },
   { q: 'Do I have to sign a contract for monthly keeping?',
