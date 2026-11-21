@@ -603,6 +603,8 @@
 .sx-book     { --sx-surf: var(--sx-surf-deep); --sx-panel-a: 0.66; }
 .sx-shop     { --sx-surf: var(--sx-surf-mid);  --sx-panel-a: 0.64; }
 .sx-faq      { --sx-surf: var(--sx-surf-high); }
+.sx-her      { --sx-surf: var(--sx-surf-base); }
+.sx-hand     { --sx-surf: var(--sx-surf-mid);  --sx-panel-a: 0.64; }
 
 /* --- width: the panels are NOT one column. Each section sets its own, so
        the strip of open water down the sides changes as you scroll: 160px
@@ -616,6 +618,8 @@
 .sx-book     { --sx-panel-max: 1150px; }
 .sx-shop     { --sx-panel-max: 1120px; }
 .sx-faq      { --sx-panel-max: 980px; }
+.sx-her      { --sx-panel-max: 1090px; }
+.sx-hand     { --sx-panel-max: 1060px; }
 
 /* --- rhythm: generous at the top of a panel, tighter underneath. A panel
        that runs 120px past its last line reads as broken, not as calm —
@@ -647,13 +651,16 @@
 .sx-area__copy,
 .sx-area__cap,
 .sx-plate__cap,
+.sx-her__prose,
+.sx-hand__note,
 .sx-sizer {
   position: relative;
   z-index: 0;              /* a stacking context, so the pool cannot fall
                               behind the panel it is lying on */
 }
 :is(.sx-section__head, .sx-promises__grid, .sx-about__body, .sx-area__copy,
-    .sx-area__cap, .sx-plate__cap, .sx-sizer)::before {
+    .sx-area__cap, .sx-plate__cap, .sx-her__prose, .sx-hand__note,
+    .sx-sizer)::before {
   content: '';
   position: absolute;
   inset: -1.5rem -1.9rem;
@@ -699,7 +706,7 @@
 }
 
 /* staggered reveal (base.css owns the transitions + reduced-motion reset) */
-.sx-promise, .sx-svc, .sx-plate, .sx-faq__item {
+.sx-promise, .sx-svc, .sx-plate, .sx-faq__item, .sx-var, .sx-hand__step {
   transition-delay: calc(var(--sx-i, 0) * 70ms);
 }
 .sx-promise::before, .sx-faq__item::before { display: none; }
@@ -1254,6 +1261,113 @@
 }
 
 /* =========================================================================
+   8c. NISHIKIGOI — the almanac entry. Two columns of argument (prose + a
+   dated spine) over a row of variety cards, each carrying its own paper
+   surface so the small muted type inside it needs no pool of its own.
+   ========================================================================= */
+.sx-her__grid { display: grid; gap: var(--sp-5); }
+@media (min-width: 900px) {
+  .sx-her__grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    column-gap: var(--sp-6);
+    align-items: start;
+  }
+}
+.sx-her__prose { max-width: 62ch; }
+.sx-her__prose p { color: var(--fg-muted); }
+.sx-her__prose p:last-child { margin-bottom: 0; }
+/* the three borrowed words. Leather, not brass: brass fails AA at this size */
+.sx-her__prose em {
+  font-style: italic;
+  font-weight: var(--w-strong);
+  color: var(--leather-700);
+}
+
+/* the dated spine — its own surface, so it reads as a sidebar card */
+.sx-her__time {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: var(--sp-4);
+  list-style: none;
+  background: rgb(255 253 249 / 0.9);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  outline: 1px solid var(--rule);
+  outline-offset: 4px;
+  box-shadow: var(--shadow-sm);
+}
+.sx-her__beat { display: grid; gap: 0.15rem; }
+.sx-her__beat + .sx-her__beat { padding-top: var(--sp-3); border-top: 1px solid var(--rule); }
+.sx-her__year {
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--leather-700);
+}
+.sx-her__beattext { font-size: var(--step--1); line-height: 1.55; color: var(--fg-muted); }
+
+/* --- the varieties ------------------------------------------------------ */
+.sx-her__vars {
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: 1fr;
+  margin: var(--sp-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Six cards, so the column count has to divide into six: auto-fit gives a
+   4 + 2 row at this panel width and leaves half a row of dead glass. */
+@media (min-width: 560px) { .sx-her__vars { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .sx-her__vars { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.sx-var {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 0.3rem;
+  margin: 0;
+  padding: var(--sp-4);
+  background: rgb(255 253 249 / 0.9);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.sx-var__chip { width: 78px; height: 34px; margin-bottom: var(--sp-2); }
+.sx-var__name { margin: 0; font-size: var(--step-0); color: var(--fg); }
+.sx-var__gloss {
+  margin: 0;
+  max-width: none;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.68rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--leather-700);
+}
+.sx-var__body { margin: 0.2rem 0 0; font-size: var(--step--1); line-height: 1.55; color: var(--fg-muted); }
+
+/* Chip colour lives here, not on the SVG: var() inside a presentation
+   attribute is flaky, and the tokens stay the single source of truth.
+   The inks are the koi palette, not generic black and red. */
+.sx-var__ground { stroke: none; }
+.sx-var__g-white { fill: #fdfbf7; }
+.sx-var__g-cream { fill: #f3e2bd; }
+.sx-var__g-ink   { fill: #241f1a; }
+.sx-var__g-gold  { fill: var(--brass-400); }
+.sx-var__hi      { fill: var(--koi-red); }
+.sx-var__sumi    { fill: #241f1a; }
+.sx-var__shiro   { fill: #fdfbf7; }
+.sx-var__sheen   { fill: none; stroke: var(--brass-300); stroke-width: 2.6; stroke-linecap: round; }
+.sx-var__edge    { fill: none; stroke: var(--leather-700); stroke-width: 1.1; opacity: 0.6; }
+.sx-var__eye     { fill: #241f1a; }
+
+/* a .rule-west: both pseudo-elements are the dashed brass rules, so it takes
+   the deep leather instead of a pool — 4.96:1 on bare glass over black */
+.sx-her__foot { margin-top: var(--sp-5); color: var(--leather-700); }
+
+/* =========================================================================
    9. ABOUT
    ========================================================================= */
 .sx-about__grid { display: grid; gap: var(--sp-5); }
@@ -1383,6 +1497,63 @@
   font-size: 0.8rem;
   color: var(--fg-muted);
 }
+
+/* =========================================================================
+   10b. RESPECTFUL HANDLING — four line items, each with the reason under it.
+   Cards carry their own surface (small muted type), the line-item bar is the
+   same device as the travel bar in the services panel.
+   ========================================================================= */
+.sx-hand__steps {
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 680px) {
+  .sx-hand__steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4) var(--sp-5); }
+}
+.sx-hand__step {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: var(--sp-4);
+  background: rgb(255 253 249 / 0.88);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.sx-hand__ico { display: block; color: var(--brass-600); }
+.sx-hand__what { margin: 0.2rem 0 0; font-size: var(--step-0); color: var(--fg); }
+.sx-hand__why { margin: 0; max-width: 48ch; font-size: var(--step--1); line-height: 1.6; color: var(--fg-muted); }
+
+.sx-hand__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-4);
+  margin: var(--sp-5) 0 0;
+  padding: var(--sp-3) var(--sp-4);
+  background: rgb(255 255 255 / 0.84);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--brass-400);
+  border-radius: var(--radius);
+}
+.sx-hand__itemtext { min-width: 0; }
+.sx-hand__itemname {
+  margin: 0;
+  max-width: none;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.7rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--leather-500);
+}
+.sx-hand__itemsub { margin: 0.15rem 0 0; max-width: 56ch; font-size: var(--step--1); color: var(--fg-muted); }
+.sx-hand__note { margin: var(--sp-5) 0 0; max-width: 62ch; font-size: var(--step--1); color: var(--fg-muted); }
 
 /* =========================================================================
    11. BOOKING + SHOP  (widgets injected by other modules)
@@ -1738,6 +1909,27 @@
     .sx-area__fig      { --sx-rise: 28px; --sx-rise-x: 10px; }
     .sx-travel         { --sx-rise: 12px; }
 
+    /* the varieties and the four handling steps: same device as the plates,
+       a shifted range per card instead of a stopwatch. Both animations are
+       listed because a bare `animation:` here would replace base.css's
+       entrance and leave the cards at opacity 0. */
+    .sx-var, .sx-hand__step {
+      animation: sx-rise linear both, sx-reveal-card linear both;
+      animation-timeline: view(), view();
+      animation-range: normal,
+        entry calc(4% + var(--sx-i, 0) * 4%) entry calc(58% + var(--sx-i, 0) * 4%);
+    }
+    .sx-var           { --sx-rise: calc(8px + var(--sx-i, 0) * 4px); }
+    .sx-hand__step    { --sx-rise: calc(10px + var(--sx-i, 0) * 3px); }
+    /* the dated spine rides its own plane against the prose beside it */
+    .sx-her__time, .sx-hand__item {
+      animation: sx-rise linear both, sx-reveal-base linear both;
+      animation-timeline: view(), view();
+      animation-range: normal, entry 4% entry 56%;
+    }
+    .sx-her__time     { --sx-rise: 26px; --sx-rise-x: -8px; }
+    .sx-hand__item    { --sx-rise: 12px; }
+
     /* --- THE HORIZONTAL RAIL ------------------------------------------
        Vertical scroll, horizontal travel. The three plates ride the same
        view() timeline at different speeds AND in different directions, so
@@ -1884,3 +2076,97 @@
    derived from --sx-gutter, so a panel can never cross the viewport edge.
    This is the belt and braces. */
 .sx-gallery, .sx-promises, .sx-services { overflow: visible clip; }
+
+/* =========================================================================
+   16. KOI LABELS — the overlay driven by src/koi-labels.js, which names the
+   nearest one or two fish while they are in open water.
+
+   STACKING, AND WHY IT IS THIS AND NOT A Z-INDEX RACE: the layer is appended
+   to <body> AFTER #pond-canvas and carries the same z-index 0, so it paints
+   over the water; #main carries z-index 1, so every glass panel paints over
+   it. A label can therefore never sit on body copy, and `pointer-events:
+   none` plus aria-hidden on the layer means it is not in the way of a click
+   or in the accessibility tree either.
+
+   CONTRAST: brass type over live water is only safe with its own floor, so
+   each caption carries the same soft night ellipse the gallery's foot uses.
+   Over the brightest thing the pond can make (a white caustic, rgb 255) the
+   0.86 plateau composites to ~#2f343a and #e8c879 reads 7.5:1; over ordinary
+   lit water it is better than 10:1. The leader and the dot are hairlines,
+   not type, and carry a dark glow instead.
+   ========================================================================= */
+.sx-koilayer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* a zero-size anchor pinned to the fish; JS writes `translate` on it.
+   The parked value matters: a slot that has not been handed a fish yet would
+   otherwise sit at 0,0 with its dot hanging 3.5px off the left of the
+   viewport, which a horizontal-overflow audit is quite right to report. Mid
+   viewport is a harmless place for an invisible, inert, zero-size box. */
+.sx-koilabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  translate: 50vw 50vh;
+  opacity: 0;
+  transition: opacity 280ms var(--ease-out);
+}
+.sx-koilabel.is-on { opacity: 1; }
+
+.sx-koilabel__dot {
+  position: absolute;
+  left: -3.5px;
+  top: -3.5px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--brass-300);
+  border-radius: 50%;
+  background: rgb(4 10 17 / 0.4);
+}
+/* the leader: a hairline from the fish to the caption. JS writes its length
+   and angle; transform-origin keeps it rooted on the fish. */
+.sx-koilabel__lead {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 1px;
+  transform-origin: left center;
+  background: var(--brass-300);
+  opacity: 0.85;
+  box-shadow: 0 0 6px rgb(4 10 17 / 0.9);
+}
+.sx-koilabel__name {
+  position: absolute;
+  left: 0;
+  top: 0;
+  /* `translate` (the property) is the fish-relative offset written by JS;
+     `transform` is the caption's own alignment, so the two compose. */
+  transform: translate(0, -50%);
+  padding: 0.2rem 0.62rem;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.7rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--brass-300);
+  text-shadow: 0 1px 10px rgb(4 10 17 / 0.95);
+  background: radial-gradient(132% 420% at 50% 50%,
+    rgb(4 10 17 / 0.86) 0%,
+    rgb(4 10 17 / 0.86) 64%,
+    rgb(4 10 17 / 0) 100%);
+}
+.sx-koilabel.is-flipped .sx-koilabel__name { transform: translate(-100%, -50%); }
+
+/* Reduced motion: the labels are static. They still follow the fish they
+   name — the fish is what is moving — but nothing fades or draws. */
+@media (prefers-reduced-motion: reduce) {
+  .sx-koilabel { transition: none; }
+}

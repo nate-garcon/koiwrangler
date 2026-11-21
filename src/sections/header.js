@@ -3,6 +3,7 @@ import { markKoiLasso, iconMenu } from './svg.js'
 
 export const NAV = [
   { label: 'Services', href: '#services' },
+  { label: 'The fish', href: '#nishikigoi' },
   { label: 'Shop', href: '#shop' },
   { label: 'About', href: '#about' },
   { label: 'FAQ', href: '#faq' },

@@ -53,7 +53,7 @@ export const ABOUT = {
     'I do the hard, dirty, physical part: get the water out, get the muck out, get the algae off the rocks, handle your fish gently with the right nets and an aerated holding tank, and put everything back the way it should be. I quote it up front, I show up when I said, and if I break something I replace it.',
     'I am careful, insured, and honest about my own limits, which is more than you can say for some of the operations that will quote you over the phone sight-unseen.',
     'Where something is beyond me, I will say so and tell you who to call, rather than guessing with a fish worth more than the job.',
-    'You may be wondering why a one-man pond cleaning operation has a website with a scroll-synchronised underwater camera and eight individually patterned koi rendered in real time. So am I. It seemed important at the time.',
+    'You may be wondering why a one-man pond cleaning operation has a website with a scroll-synchronised underwater camera and up to eight individually patterned koi rendered in real time \u2014 fewer on a phone, which I am assured is a performance decision. So am I. It seemed important at the time.',
   ],
   signature: '— Michael, owner',
 }

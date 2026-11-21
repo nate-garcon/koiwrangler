@@ -8,12 +8,15 @@ import { renderHero } from './hero.js'
 import { renderPromises } from './promises.js'
 import { renderServices, wireServices } from './services.js'
 import { renderGallery } from './gallery.js'
+import { renderHeritage } from './heritage.js'
 import { renderAbout } from './about.js'
 import { renderArea } from './area.js'
+import { renderHandling } from './handling.js'
 import { renderShop } from './shop.js'
 import { renderBooking } from './booking.js'
 import { renderFaq } from './faq.js'
 import { renderFooter } from './footer.js'
+import { initKoiLabels } from '../koi-labels.js'
 
 export function renderSections(root) {
   if (!root) return
@@ -26,8 +29,12 @@ export function renderSections(root) {
     renderPromises(),
     renderServices(),
     renderGallery(),
+    // The fish themselves, then how they are handled: the argument runs
+    // "here is what these are" -> "here is how we treat them" -> "book".
+    renderHeritage(),
     renderAbout(),
     renderArea(),
+    renderHandling(),
     renderBooking(),
     renderShop(),
     renderFaq(),
@@ -39,6 +46,9 @@ export function renderSections(root) {
   wireServices()
   wireReveal()
   wireStickyHeader()
+  // Names the koi as they swim past, in the open water beside the panels.
+  // No-ops cleanly when the pond bridge is absent.
+  initKoiLabels()
 }
 
 /** One IntersectionObserver for every .reveal block. CSS handles the motion,

@@ -1004,8 +1004,10 @@ export function createKoiSchool ({ quality }) {
       material,
       size,
       // Kept so the page can name the fish swimming behind it — see
-      // getKoiLabels() in index.js.
+      // getKoiLabels() in index.js. `id` is stable for the life of the school
+      // so a label can follow one fish rather than guessing from its looks.
       variant,
+      id: `koi-${i}`,
       curve: makePath(rand, i, count),
       u: (i / count) + rand() * 0.08,
       length: 1,

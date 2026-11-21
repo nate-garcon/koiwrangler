@@ -207,7 +207,7 @@ export function initPond ({ canvas }) {
       const x = (projected.x * 0.5 + 0.5) * w
       const y = (-projected.y * 0.5 + 0.5) * h
       if (x < 0 || x > w || y < 0 || y > h) continue
-      out.push({ variant: f.variant, x, y, depth: projected.z, opacity, size: f.size })
+      out.push({ id: f.id, variant: f.variant, x, y, depth: projected.z, opacity, size: f.size })
     }
     // Nearest first, so a caller showing only one or two picks the ones that
     // actually read.
