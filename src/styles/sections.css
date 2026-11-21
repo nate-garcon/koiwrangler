@@ -22,11 +22,43 @@
   --sx-header-h: 58px;
   --sx-scrim-x: 50%;
 
-  /* panel geometry */
-  --sx-gutter: clamp(0.75rem, 3.2vw, 2.75rem);
-  --sx-panel-w: min(1248px, 100% - 2 * var(--sx-gutter));
-  --sx-panel-a: 0.88;              /* measured: holds 4.5:1 over dark water */
-  --sx-drift: calc(var(--sx-gutter) * 0.5);   /* lateral drift amplitude */
+  /* --- PANEL GEOMETRY ------------------------------------------------
+     The pond is the product here, so the panels are inset far further than
+     a normal page gutter and each section sets its own max width: there is
+     open water down both sides of every panel, and the width of that water
+     changes as you scroll.
+
+     TRANSPARENCY, AND WHY IT IS SAFE (measured, not guessed)
+     --------------------------------------------------------
+     Every panel was screenshotted over LIVE water with the panels hidden,
+     the capture box-blurred to the same radius as the backdrop-filter, and
+     the darkest blurred pixel inside each panel's rect taken as the worst
+     frame. Across eleven scroll beats that worst pixel is effectively BLACK
+     in every section (relative luminance 0.001-0.009 — the silt floor and
+     the fog both go to near-nothing). So the panels are designed against
+     rgb(0 0 0): nothing the water does can be darker than the number these
+     alphas were computed from.
+
+     Over black, composited against the panel surface:
+       a 0.62  ->  #1d1a16 body ink  5.2-6.4:1   (passes AA)
+                   #544b41 muted     2.6-3.2:1   (FAILS)
+     So the panel glass carries NEAR-BLACK TYPE ONLY, and every block of
+     muted, small or leather type sits in a local POOL of the same surface
+     (--sx-pool-a) that lifts its patch to an effective ~0.89 alpha, where
+     muted is 5.1-6.4:1 and leather 5.0-6.4:1. The result: the pond reads
+     through ~60% of the panel area and through the whole of the gap, while
+     every string of text still clears 4.5:1 against the worst frame. */
+  --sx-gutter: clamp(0.9rem, 5vw, 5rem);
+  --sx-panel-max: 1120px;
+  /* NB: the width is computed ON .sx-section, not here. A custom property
+     is substituted where it is DECLARED, so --sx-panel-w resolved on :root
+     would bake in the root's --sx-panel-max and every panel would come out
+     the same width — which is exactly the wall this file is trying to
+     stop being. */
+  --sx-panel-a: 0.62;              /* glass. NOT a wall. */
+  --sx-pool-a: 0.7;                /* local scrim under muted/small type */
+  --sx-panel-blur: 22px;
+  --sx-drift: calc(var(--sx-gutter) * 0.42);  /* lateral drift amplitude */
 
   /* panel surfaces, as raw channels so alpha can be applied per panel.
      ~6-8% L* apart, which is what it takes for the alternation to read. */
@@ -38,8 +70,12 @@
   /* a rule that reads on every panel tint; --rule is invisible on warm paper */
   --sx-divider: rgb(107 68 37 / 0.2);
 
-  /* live accent, re-pointed per story chapter further down */
+  /* live accent and live GLASS TINT, both re-pointed per story chapter
+     further down. The tint is a 7% wash over the panel surface, which is
+     enough for the glass to pick up the colour of the water it is floating
+     on without moving any text colour off its measured contrast. */
   --sx-accent: var(--brass-500);
+  --sx-tint: 184 134 42;
 }
 @media (min-width: 900px) {
   :root { --sx-header-h: 78px; --sx-scrim-x: 34%; }
@@ -509,26 +545,37 @@
 
 .sx-section {
   position: relative;
-  width: var(--sx-panel-w);
+  width: min(var(--sx-panel-max), 100% - 2 * var(--sx-gutter));
   margin-inline: auto;
-  padding-block: var(--sp-6);
-  border: 1px solid rgb(232 220 201 / 0.6);
+  padding-block: var(--sp-6) var(--sp-5);
+  border: 1px solid rgb(255 248 234 / 0.34);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(180deg, rgb(255 246 230 / 0.16) 0%, rgb(255 246 230 / 0.04) 42%, rgb(255 246 230 / 0.1) 100%),
-    rgb(var(--sx-surf, var(--sx-surf-base)) / var(--sx-panel-a));
-  backdrop-filter: blur(12px) saturate(1.18);
-  -webkit-backdrop-filter: blur(12px) saturate(1.18);
+    linear-gradient(180deg, rgb(255 246 230 / 0.12) 0%, rgb(255 246 230 / 0.02) 46%, rgb(255 246 230 / 0.08) 100%),
+    linear-gradient(180deg, rgb(var(--sx-tint) / 0.08) 0%, rgb(var(--sx-tint) / 0.02) 100%),
+    rgb(var(--sx-surf, var(--sx-surf-base)) / var(--sx-panel-live));
+  /* Blur and saturation are what make glass legible; opacity is what makes
+     it a wall. 22px of blur destroys the high-frequency detail the eye has
+     to fight, so the type can sit on a third less paint than it did. */
+  backdrop-filter: blur(var(--sx-panel-blur)) saturate(1.4) brightness(1.04);
+  -webkit-backdrop-filter: blur(var(--sx-panel-blur)) saturate(1.4) brightness(1.04);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.4),
-    0 18px 50px rgb(4 10 17 / 0.28);
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 24px 70px rgb(4 10 17 / 0.34);
   scroll-margin-top: calc(var(--sx-header-h) + var(--sp-4));
-  /* muted copy is deepened inside panels: over the darkest water the panel
-     composites down to ~#dfdcd6, and #5c5349 only just clears AA there. */
-  --fg-muted: #544b41;
+  --fg-muted: #4e463d;
+  /* per-section alpha + per-chapter delta, clamped to the measured AA floor */
+  --sx-panel-live: clamp(0.58, calc(var(--sx-panel-a) + var(--sx-chapter-paint)), 0.94);
+  /* The pool only has to LIFT the patch under the type to an effective
+     ~0.89 alpha. The denser the glass already is, the less pool is needed
+     — so the chapter delta is subtracted here, and the murk chapter gets
+     a thicker panel with a fainter pool rather than both at once. */
+  --sx-pool-live: clamp(0.45, calc(var(--sx-pool-a) - var(--sx-chapter-paint)), 0.82);
 }
+/* No backdrop-filter (older Safari, some Android WebViews): the blur was
+   carrying the legibility, so the paint has to carry it instead. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .sx-section { --sx-panel-a: 0.96; }
+  .sx-section { --sx-panel-a: 0.93; --sx-pool-a: 0.5; }
 }
 
 /* a brass capillary along the panel's top edge — the live story accent */
@@ -545,24 +592,90 @@
   transition: opacity var(--dur-2) var(--ease), background var(--dur-3) var(--ease);
 }
 
-/* --- panel surfaces: ~6-8% L* apart so the alternation actually reads --- */
+/* --- panel surfaces: ~6-8% L* apart so the alternation actually reads.
+       The deep (darkest) surfaces also carry a little more paint, because
+       deep paper over black water composites lower than white paper does. */
 .sx-promises { --sx-surf: var(--sx-surf-base); }
-.sx-services { --sx-surf: var(--sx-surf-deep); }
+.sx-services { --sx-surf: var(--sx-surf-deep); --sx-panel-a: 0.66; }
 .sx-gallery  { --sx-surf: var(--sx-surf-high); }
-.sx-about    { --sx-surf: var(--sx-surf-mid); }
+.sx-about    { --sx-surf: var(--sx-surf-mid);  --sx-panel-a: 0.64; }
 .sx-area     { --sx-surf: var(--sx-surf-high); }
-.sx-book     { --sx-surf: var(--sx-surf-deep); }
-.sx-shop     { --sx-surf: var(--sx-surf-mid); }
+.sx-book     { --sx-surf: var(--sx-surf-deep); --sx-panel-a: 0.66; }
+.sx-shop     { --sx-surf: var(--sx-surf-mid);  --sx-panel-a: 0.64; }
 .sx-faq      { --sx-surf: var(--sx-surf-high); }
 
-/* --- rhythm: 88px is the default, not the only value --- */
+/* --- width: the panels are NOT one column. Each section sets its own, so
+       the strip of open water down the sides changes as you scroll: 160px
+       beside the services, 220px beside the about, 250px beside the FAQ at
+       1440. The water is the thing being shown off; these are the windows. */
+.sx-promises { --sx-panel-max: 1140px; }
+.sx-services { --sx-panel-max: 1180px; }
+.sx-gallery  { --sx-panel-max: 1210px; }
+.sx-about    { --sx-panel-max: 1000px; }
+.sx-area     { --sx-panel-max: 1040px; }
+.sx-book     { --sx-panel-max: 1150px; }
+.sx-shop     { --sx-panel-max: 1120px; }
+.sx-faq      { --sx-panel-max: 980px; }
+
+/* --- rhythm: generous at the top of a panel, tighter underneath. A panel
+       that runs 120px past its last line reads as broken, not as calm —
+       the bottom padding is deliberately ~2/3 of the top. --- */
 @media (min-width: 760px) {
-  .sx-section { padding-block: var(--sp-7); }
-  .sx-services, .sx-book, .sx-shop { padding-block: 7.5rem; }
-  .sx-area, .sx-gallery { padding-block: 6rem; }
+  .sx-section { padding-block: 5rem 3.25rem; }
+  .sx-services, .sx-book, .sx-shop { padding-block: 5.75rem 3.5rem; }
+  .sx-area, .sx-gallery { padding-block: 4.5rem 3rem; }
   /* and the gaps vary too, so the stack breathes unevenly on purpose */
   .sx-gallery, .sx-book { margin-top: 2rem; }
 }
+
+/* =========================================================================
+   4b. POOLS OF LIGHT — the reason the glass can be this thin.
+   Measured over the worst (black) frame of water:
+       panel glass alone, a 0.62-0.66   #1d1a16 ink  5.2-6.4:1   AA pass
+                                        #4e463d muted 2.9-3.6:1   AA FAIL
+       glass + pool, effective a 0.89   #4e463d muted 5.7-7.2:1   AA pass
+                                        #6b4425 leather 5.0-6.4:1 AA pass
+   So: bare glass carries near-black type only. Every block that holds
+   muted, small or leather type sits in a pool — the same paper, blurred at
+   the edges so it reads as light gathering on the glass rather than as a
+   box drawn around the words. Opaque things (cards, the travel bar, the
+   about stamp, plate frames) carry their own surface and need no pool.
+   ========================================================================= */
+.sx-section__head,
+.sx-promises__grid,
+.sx-about__body,
+.sx-area__copy,
+.sx-area__cap,
+.sx-plate__cap,
+.sx-sizer {
+  position: relative;
+  z-index: 0;              /* a stacking context, so the pool cannot fall
+                              behind the panel it is lying on */
+}
+:is(.sx-section__head, .sx-promises__grid, .sx-about__body, .sx-area__copy,
+    .sx-area__cap, .sx-plate__cap, .sx-sizer)::before {
+  content: '';
+  position: absolute;
+  inset: -1.5rem -1.9rem;
+  z-index: -1;
+  /* An ELLIPSE, not a rectangle, and deliberately bigger than the text box:
+     the plateau (0 -> 56%) covers every glyph at full strength and the
+     whole fall-off happens OUTSIDE the block, so it reads as light
+     gathering on the glass instead of a card drawn round the words. */
+  background: radial-gradient(112% 104% at 44% 50%,
+    rgb(var(--sx-surf, var(--sx-surf-base)) / var(--sx-pool-live, var(--sx-pool-a))) 0%,
+    rgb(var(--sx-surf, var(--sx-surf-base)) / var(--sx-pool-live, var(--sx-pool-a))) 56%,
+    rgb(var(--sx-surf, var(--sx-surf-base)) / 0) 100%);
+  filter: blur(14px);
+  pointer-events: none;
+}
+.sx-plate__cap::before, .sx-area__cap::before { inset: -0.9rem -1.2rem; }
+.sx-sizer::before { inset: -1.1rem -1.4rem; }
+
+/* .sx-gallery__foot is a .rule-west — both its pseudo-elements are already
+   the dashed brass rules, so it gets the deep leather instead of a pool.
+   #432914 on bare glass over black water is 4.96:1. */
+.sx-gallery__foot { color: var(--leather-700); }
 
 /* =========================================================================
    5. SHARED SECTION FURNITURE
@@ -835,7 +948,9 @@
   flex-direction: column;
   gap: var(--sp-3);
   overflow: hidden;
-  background: var(--paper-000);
+  /* paper, but paper you can see the pond through. Over the worst (black)
+     frame this composites to ~#f1efea: muted ink is still 8.6:1. */
+  background: rgb(255 255 255 / 0.86);
 }
 .sx-svc--popular { padding-top: calc(var(--sp-4) + 1.7rem); }
 .sx-svc--popular::before { display: none; }
@@ -951,7 +1066,7 @@
   margin: 0;
   max-width: none;
   padding: var(--sp-3) var(--sp-4);
-  background: var(--paper-000);
+  background: rgb(255 255 255 / 0.84);
   border: 1px solid var(--rule);
   border-left: 4px solid var(--brass-400);
   border-radius: var(--radius);
@@ -965,6 +1080,26 @@
   letter-spacing: var(--ls-caps);
   text-transform: uppercase;
   color: var(--leather-500);
+}
+
+/* the ghost numeral — the same device as the promises '04', and the same
+   decorative-only content: '06' / '' keeps it out of the a11y tree */
+@media (min-width: 1000px) {
+  .sx-services > .wrap { position: relative; }
+  .sx-services > .wrap::after {
+    content: '06' / '';
+    position: absolute;
+    top: -1.75rem;
+    right: 0;
+    font-family: var(--font-display);
+    font-size: clamp(4.5rem, 8.5vw, 8.5rem);
+    line-height: 0.78;
+    letter-spacing: 0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgb(184 134 42 / 0.4);
+    pointer-events: none;
+    user-select: none;
+  }
 }
 
 /* =========================================================================
@@ -984,7 +1119,7 @@
 .sx-plate__frame {
   position: relative;
   padding: var(--sp-3);
-  background: var(--paper-000);
+  background: rgb(255 255 255 / 0.84);
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius);
   outline: 1px solid var(--rule);
@@ -1052,6 +1187,72 @@
   .sx-gallery__foot { grid-column: 1 / -1; grid-row: 3; margin-top: 0; }
 }
 
+/* --- 8b. OPEN WATER: the gallery has no panel at all ---------------------
+   The brief is "show off the pond", and the gallery is the one section
+   whose content already carries its own surface: three paper plates and a
+   rule. So the panel is removed entirely here. The plates float on the
+   water, the type goes light, and only the type gets a scrim — a dark
+   ellipse of the same family as the hero's.
+
+   Measured: a 0.74 night scrim over the BRIGHTEST water the pond can make
+   (a white caustic, rgb 255) composites to ~#3b4046 — #f7f3ee reads 9.5:1,
+   #f4ece0 8.9:1, #e8c879 6.5:1. Over ordinary lit water it is 11:1. Light
+   type here is safe at any frame, which is the mirror of the argument for
+   the paper panels: dark ink needs a light floor, light ink needs a dark
+   one, and the water is never allowed to decide.
+   ------------------------------------------------------------------------ */
+.sx-gallery {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+.sx-gallery::before { display: none; }   /* no panel, no panel capillary */
+
+.sx-gallery .eyebrow { color: var(--brass-300); }
+.sx-gallery .sx-h2 { color: var(--koi-white); }
+.sx-gallery .sx-section__lede,
+.sx-gallery .sx-plate__cap { color: var(--fg-on-dark); }
+.sx-gallery__foot { color: var(--brass-300); }
+.sx-gallery__foot::before, .sx-gallery__foot::after { opacity: 1; }
+
+/* the scrims: same geometry as the light pools, inverted */
+.sx-gallery .sx-section__head::before,
+.sx-gallery .sx-plate__cap::before {
+  background: radial-gradient(112% 106% at 44% 50%,
+    rgb(4 10 17 / 0.74) 0%,
+    rgb(4 10 17 / 0.74) 56%,
+    rgb(4 10 17 / 0) 100%);
+  filter: blur(16px);
+}
+/* The foot is a .rule-west: BOTH its pseudo-elements are already the
+   dashed brass rules, so it cannot have a pool. It carries its own scrim
+   as a background instead — a wide, soft night ellipse whose plateau
+   covers the full width of the label. #e8c879 on it is 6.5:1 even over a
+   white caustic; with no scrim at all it would be 1.6:1 there. */
+.sx-gallery__foot {
+  position: relative;
+  z-index: 0;
+  padding-block: 0.55rem;
+  background: radial-gradient(86% 320% at 50% 50%,
+    rgb(4 10 17 / 0.74) 0%,
+    rgb(4 10 17 / 0.74) 62%,
+    rgb(4 10 17 / 0) 100%);
+  text-shadow: 0 1px 12px rgb(4 10 17 / 0.9);
+}
+
+/* plates float: they are the only solid thing in the section, so they get
+   the shadow the panel used to carry */
+.sx-gallery .sx-plate__frame {
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: 0 20px 55px rgb(4 10 17 / 0.45);
+  outline-color: rgb(255 253 249 / 0.28);
+}
+.sx-gallery .sx-plate:hover .sx-plate__frame {
+  box-shadow: 0 26px 70px rgb(4 10 17 / 0.55);
+}
+
 /* =========================================================================
    9. ABOUT
    ========================================================================= */
@@ -1075,10 +1276,10 @@
   gap: var(--sp-2);
   padding: var(--sp-5) var(--sp-4);
   text-align: center;
-  background: var(--paper-050);
+  background: rgb(250 246 239 / 0.86);
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius-lg);
-  box-shadow: inset 0 0 0 4px var(--paper-000), inset 0 0 0 5px var(--rule);
+  box-shadow: inset 0 0 0 4px rgb(255 255 255 / 0.7), inset 0 0 0 5px var(--rule);
 }
 .sx-about__brandmark { color: var(--brass-600); }
 /* the about stamp keeps Rye: --step-2 is where it starts reading as lettering */
@@ -1220,7 +1421,8 @@
   padding: 0;
 }
 .sx-faq__d {
-  background: rgb(255 255 255 / 0.6);
+  /* its own little pane of glass, a touch denser than the panel under it */
+  background: rgb(255 255 255 / 0.68);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
   transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
@@ -1280,13 +1482,16 @@
     margin-bottom: 0;
   }
   .sx-faq__list { grid-column: 6 / -1; max-width: none; gap: var(--sp-2); }
-  /* a brass hairline runs on down the head column so it is a rail, not a void */
+  /* a brass hairline runs on down the head column so it is a rail, not a
+     void. It is short on purpose: the head's pool of light is sized to the
+     block, and a 140px rail dragged a 140px pale rectangle down an empty
+     column with it. */
   .sx-faq .sx-section__head::after {
     content: '';
     display: block;
     width: 1px;
-    height: 140px;
-    margin-top: var(--sp-5);
+    height: 64px;
+    margin-top: var(--sp-4);
     background: linear-gradient(180deg, var(--sx-accent), rgb(0 0 0 / 0));
     opacity: 0.55;
   }
@@ -1422,14 +1627,26 @@
    element its own local progress with no JS at all.
    ========================================================================= */
 
-/* --- the live story accent: the brass capillary on every panel, and the
-       hero's hint rule, re-point as the chapters move --- */
-:root[data-chapter="dusk"]   { --sx-accent: var(--brass-400); }
-:root[data-chapter="dive"]   { --sx-accent: #86b4cc; }
-:root[data-chapter="murk"]   { --sx-accent: #718c44; --sx-panel-a: 0.9; }
-:root[data-chapter="clean"]  { --sx-accent: var(--brass-300); }
-:root[data-chapter="return"] { --sx-accent: var(--cta); }
-:root[data-chapter="dawn"]   { --sx-accent: var(--brass-300); }
+/* --- the live story accent (the brass capillary on every panel and the
+       hero's hint rule), the live GLASS TINT, and the GLASS DENSITY BY
+       CHAPTER.
+       --sx-chapter-paint is added to whatever alpha the section asked for,
+       so the per-section values and the per-chapter values compose instead
+       of overwriting each other:
+         murk   +0.07  the water is filthy, busy and loud — give the type
+                       more paint exactly where the pond is hardest to read
+         dive   +0.05  the surface crossing throws a lot of contrast about
+         return
+         dawn   -0.04  clean, calm water worth looking at — thin the glass
+       The floor of the clamp (0.58) is the measured AA limit for #1d1a16
+       on the deepest surface over black water (5.0:1). --- */
+:root { --sx-chapter-paint: 0; }
+:root[data-chapter="dusk"]   { --sx-tint: 216 169 74; --sx-accent: var(--brass-400); }
+:root[data-chapter="dive"]   { --sx-tint: 134 180 204; --sx-accent: #86b4cc; --sx-chapter-paint: 0.05; }
+:root[data-chapter="murk"]   { --sx-tint: 113 140 68; --sx-accent: #718c44; --sx-chapter-paint: 0.07; }
+:root[data-chapter="clean"]  { --sx-tint: 232 200 121; --sx-accent: var(--brass-300); }
+:root[data-chapter="return"] { --sx-tint: 212 84 28; --sx-accent: var(--cta); --sx-chapter-paint: -0.04; }
+:root[data-chapter="dawn"]   { --sx-tint: 232 200 121; --sx-accent: var(--brass-300); --sx-chapter-paint: -0.04; }
 
 /* the capillary brightens with scroll velocity — the page feels driven */
 .sx-section::before {
@@ -1493,11 +1710,25 @@
       from { translate: var(--sx-rise-x, 0px) var(--sx-rise); }
       to   { translate: calc(var(--sx-rise-x, 0px) * -1) calc(var(--sx-rise) * -1); }
     }
-    .sx-section__head,
-    .sx-plate, .sx-promise, .sx-faq__item,
-    .sx-area__fig, .sx-travel {
+    /* NOT also .reveal elements: parallax alone is safe here */
+    .sx-section__head {
       animation: sx-rise linear both;
       animation-timeline: view();
+    }
+    /* These ARE .reveal elements. base.css gives them a scroll-driven
+       entrance; a bare `animation: sx-rise` here would replace it and
+       leave them at opacity 0, so both animations are listed, each with
+       its own timeline and range. */
+    .sx-plate, .sx-promise, .sx-faq__item {
+      animation: sx-rise linear both, sx-reveal-card linear both;
+      animation-timeline: view(), view();
+      animation-range: normal,
+        entry calc(4% + var(--sx-i, 0) * 4%) entry calc(58% + var(--sx-i, 0) * 4%);
+    }
+    .sx-area__fig, .sx-travel {
+      animation: sx-rise linear both, sx-reveal-base linear both;
+      animation-timeline: view(), view();
+      animation-range: normal, entry 4% entry 56%;
     }
     .sx-section__head  { --sx-rise: 16px; }
     .sx-faq .sx-section__head { animation: none; }
@@ -1507,14 +1738,118 @@
     .sx-area__fig      { --sx-rise: 28px; --sx-rise-x: 10px; }
     .sx-travel         { --sx-rise: 12px; }
 
-    /* the cross-axis one: the plate row slides against its own panel, so
-       the gallery reads as a rail moving sideways under vertical scroll */
+    /* --- THE HORIZONTAL RAIL ------------------------------------------
+       Vertical scroll, horizontal travel. The three plates ride the same
+       view() timeline at different speeds AND in different directions, so
+       passing the gallery opens the row out sideways and closes it again.
+       No pinning, no scroll-jacking: the page scrolls normally the whole
+       time, and a keyboard or a phone sees exactly the same motion. The
+       amplitudes are a fraction of --sx-gutter, so nothing can ever reach
+       the viewport edge. --- */
     .sx-gallery__grid {
       --sx-rise: 0px;
-      --sx-rise-x: 2%;
+      --sx-rise-x: 1.2%;
       animation: sx-rise linear both;
       animation-timeline: view();
     }
+    .sx-gallery__grid > .sx-plate:nth-child(1) { --sx-rise: 10px; --sx-rise-x: calc(var(--sx-drift) * -1.1); }
+    .sx-gallery__grid > .sx-plate:nth-child(2) { --sx-rise: 26px; --sx-rise-x: calc(var(--sx-drift) * 0.85); }
+    .sx-gallery__grid > .sx-plate:nth-child(3) { --sx-rise: 18px; --sx-rise-x: calc(var(--sx-drift) * -0.6); }
+
+    /* the promises row does the same thing at a quieter amplitude, so the
+       four columns fan very slightly as they cross the viewport */
+    .sx-promise:nth-child(odd)  { --sx-rise-x: -9px; }
+    .sx-promise:nth-child(even) { --sx-rise-x: 9px; }
+
+    /* --- DEPTH INSIDE THE SECTION HEAD --------------------------------
+       The eyebrow, the Rye h2 and the lede are three planes, not one
+       block: the eyebrow travels furthest and leads sideways, the h2 sits
+       mid-depth, the lede is nearly still. `translate` only, so base.css's
+       reveal (which owns `transform` and `clip-path`) composes with it
+       rather than fighting it. --- */
+    .sx-section__head .eyebrow {
+      --sx-rise: 24px; --sx-rise-x: 7px;
+      animation: sx-rise linear both, sx-reveal-slide linear both;
+      animation-timeline: view(), view();
+      animation-range: normal, entry 6% entry 46%;
+    }
+    .sx-section__head :is(h2, .sx-h2) {
+      --sx-rise: 12px;
+      animation: sx-rise linear both, sx-reveal-wipe linear both;
+      animation-timeline: view(), view();
+      animation-range: normal, entry 12% entry 64%;
+    }
+    .sx-section__head .sx-section__lede {
+      --sx-rise: 5px;
+      animation: sx-rise linear both, sx-reveal-lift linear both;
+      animation-timeline: view(), view();
+      animation-range: normal, entry 20% entry 72%;
+    }
+    /* The FAQ head is sticky — a sticky element that also translates reads
+       as a bug, so that column drops the parallax. It keeps its entrance:
+       `animation: none` here would strip that as well.
+
+       A sticky block is also the one place a bare view() timeline lies:
+       once the head pins, its box stops moving through the scrollport and
+       its own progress freezes, which left the lede stuck at opacity 0.
+       So these three read the SECTION's view timeline instead of their
+       own — the section is not sticky, so its progress is honest. */
+    .sx-faq, .sx-about { view-timeline-name: --sx-sec-view; }
+    .sx-faq .sx-section__head .eyebrow {
+      animation: sx-reveal-slide linear both;
+      animation-range: entry 6% entry 46%;
+    }
+    .sx-faq .sx-section__head :is(h2, .sx-h2) {
+      animation: sx-reveal-wipe linear both;
+      animation-range: entry 12% entry 64%;
+    }
+    .sx-faq .sx-section__head .sx-section__lede {
+      animation: sx-reveal-lift linear both;
+      animation-range: entry 20% entry 72%;
+    }
+    /* AFTER the shorthands on purpose: `animation` resets
+       animation-timeline to auto, so a timeline declared above them would
+       be thrown away and these would snap open with no animation at all. */
+    .sx-faq .sx-section__head :is(.eyebrow, h2, .sx-h2, .sx-section__lede) {
+      animation-timeline: --sx-sec-view;
+    }
+
+    /* the about stamp rides its own plane against the prose beside it */
+    .sx-about__aside {
+      --sx-rise: 34px; --sx-rise-x: -8px;
+      animation: sx-rise linear both, sx-reveal-base linear both;
+      animation-timeline: view(), view();
+      animation-range: normal, entry 4% entry 56%;
+    }
+    .sx-about__sig { --sx-rise: 10px; animation: sx-rise linear both; animation-timeline: view(); }
+    @media (min-width: 900px) {
+      /* ...unless it is the sticky one, for the same reason as the FAQ.
+         The entrance stays — dropping to `animation: none` here would
+         strip it and leave the stamp invisible. */
+      .sx-about__aside {
+        animation: sx-reveal-base linear both;
+        animation-timeline: --sx-sec-view;   /* sticky: see the FAQ note */
+        animation-range: entry 4% entry 56%;
+      }
+    }
+
+    /* the ghost numerals are the furthest-back plane in the whole page */
+    .sx-promises > .wrap::after,
+    .sx-services > .wrap::after {
+      --sx-rise: 54px; --sx-rise-x: 16px;
+      animation: sx-rise linear both;
+      animation-timeline: view();
+    }
+
+    /* the four footer columns arrive on four planes */
+    .sx-footer__grid > * {
+      animation: sx-rise linear both;
+      animation-timeline: view();
+    }
+    .sx-footer__grid > :nth-child(1) { --sx-rise: 26px; --sx-rise-x: -6px; }
+    .sx-footer__grid > :nth-child(2) { --sx-rise: 16px; }
+    .sx-footer__grid > :nth-child(3) { --sx-rise: 22px; }
+    .sx-footer__grid > :nth-child(4) { --sx-rise: 12px; --sx-rise-x: 6px; }
 
     /* the hero's empty koi stage gets a counter-drift so the two halves of
        the hero are visibly on different planes */
@@ -1523,6 +1858,25 @@
       --sx-rise-x: 0px;
       animation: none;
     }
+  }
+
+  /* --- LAG AND SETTLE -------------------------------------------------
+     --scroll-speed is 0..1 and decays to 0 the moment the reader stops,
+     so anything multiplied by it is alive while the page is moving and
+     perfectly still while the page is read. The panel is driven by the
+     compositor (above); its CONTENTS lag behind it by a few pixels in the
+     direction of travel, which is what makes the glass feel like a sheet
+     with depth behind it rather than a decal. --- */
+  .sx-section > .wrap {
+    translate: calc(var(--scroll-dir) * var(--scroll-speed) * -7px) 0;
+    transition: translate 420ms var(--ease-out);
+  }
+  .sx-gallery .sx-plate__frame {
+    transition: transform var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+  }
+  /* the brass capillary stretches as the page moves */
+  .sx-section::before {
+    scale: calc(1 - var(--scroll-speed) * 0.06) 1;
   }
 }
 

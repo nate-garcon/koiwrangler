@@ -54,7 +54,13 @@ function wireReveal() {
 
   const io = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (!entry.isIntersecting) return
+      // An observer only reports what is intersecting WHEN it observes. A
+      // reader who deep-links to #book, reloads halfway down, or jumps via a
+      // nav anchor leaves everything above the viewport unreported — and a
+      // .reveal block that is never reported stays at opacity:0 for good.
+      // Anything already scrolled past counts as seen.
+      const seen = entry.isIntersecting || entry.boundingClientRect.bottom < 0
+      if (!seen) return
       entry.target.classList.add('in')
       io.unobserve(entry.target)
     })

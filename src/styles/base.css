@@ -275,4 +275,75 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: 1.25em; }
     :is(.sx-section__lede, .sx-book__alt, .sx-about__p--lead, .sx-area__copy > p) {
     opacity: 1; transform: none;
   }
+
+  /* =======================================================================
+     THE SAME CHOREOGRAPHY, ON THE COMPOSITOR.
+     Everything above waits for an IntersectionObserver to add `.in`, which
+     has two failure modes. On a starved main thread the class lands late,
+     and — worse — an element that is ABOVE the viewport when the observer
+     starts never intersects at all: a deep link to #faq, a reload halfway
+     down the page, or an instant jump leaves everything above the fold at
+     opacity 0 for good. A view() timeline has neither problem, because an
+     element the viewport has already passed simply sits at progress 1 and
+     is therefore already open.
+
+     Where scroll timelines exist these animations supersede the
+     transitions above (an animation beats a transition on the same
+     property). Same motion, same distances — the clock is the scroll
+     position instead of 560ms.
+
+     NOTE FOR SECTIONS.CSS: an element that also carries a scroll-linked
+     `animation` MUST list its entrance animation alongside it, because a
+     bare `animation:` later in the cascade replaces this one wholesale and
+     would leave the element invisible.
+     ======================================================================= */
+  @supports (animation-timeline: view()) {
+    @keyframes sx-reveal-base  { from { opacity: 0; transform: translateY(18px); }            to { opacity: 1; transform: none; } }
+    @keyframes sx-reveal-card  { from { opacity: 0; transform: translateY(28px) scale(0.985); } to { opacity: 1; transform: none; } }
+    @keyframes sx-reveal-line  { from { transform: scaleX(0); }                                to { transform: scaleX(1); } }
+    @keyframes sx-reveal-slide { from { opacity: 0; transform: translateX(-12px); }            to { opacity: 1; transform: none; } }
+    @keyframes sx-reveal-wipe  { from { clip-path: inset(100% 0 0 0); transform: translateY(16px); }
+                                 to   { clip-path: inset(-6% -6% -14% -6%); transform: none; } }
+    @keyframes sx-reveal-lift  { from { opacity: 0; transform: translateY(10px); }             to { opacity: 1; transform: none; } }
+
+    .reveal {
+      animation: sx-reveal-base linear both;
+      animation-timeline: view();
+      animation-range: entry 4% entry 56%;
+    }
+    /* the stagger that was transition-delay becomes a shifted range, so it
+       is a position on the page rather than a stopwatch */
+    .reveal--card,
+    .sx-svc.reveal, .sx-plate.reveal, .sx-promise.reveal, .sx-faq__item.reveal {
+      animation-name: sx-reveal-card;
+      animation-range: entry calc(4% + var(--sx-i, 0) * 4%) entry calc(58% + var(--sx-i, 0) * 4%);
+    }
+    .reveal--card::before,
+    .sx-svc.reveal::before, .sx-plate.reveal::before,
+    .sx-promise.reveal::before, .sx-faq__item.reveal::before {
+      animation: sx-reveal-line linear both;
+      animation-timeline: view();
+      animation-range: entry 26% entry 72%;
+    }
+    /* head blocks still do not move themselves — their three lines do */
+    .reveal--head, .sx-section__head.reveal,
+    .sx-about__body.reveal, .sx-area__copy.reveal { animation: none; }
+
+    :is(.reveal--head, .sx-section__head.reveal, .sx-about__body.reveal, .sx-area__copy.reveal) .eyebrow {
+      animation: sx-reveal-slide linear both;
+      animation-timeline: view();
+      animation-range: entry 6% entry 46%;
+    }
+    :is(.reveal--head, .sx-section__head.reveal, .sx-about__body.reveal, .sx-area__copy.reveal) :is(h2, .sx-h2) {
+      animation: sx-reveal-wipe linear both;
+      animation-timeline: view();
+      animation-range: entry 12% entry 64%;
+    }
+    :is(.reveal--head, .sx-section__head.reveal, .sx-about__body.reveal, .sx-area__copy.reveal)
+      :is(.sx-section__lede, .sx-book__alt, .sx-about__p--lead, .sx-area__copy > p) {
+      animation: sx-reveal-lift linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 72%;
+    }
+  }
 }
