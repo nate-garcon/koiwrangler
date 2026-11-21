@@ -1,0 +1,89 @@
+/**
+ * SHARED CONTRACT — site copy. Read-only for feature modules.
+ *
+ * POSITIONING, AND WHY: Michael is brand new to ponds and koi. So this site
+ * NEVER claims expertise, certifications, years of experience, or fish-health
+ * diagnosis, and carries NO invented testimonials. What it sells is what is
+ * actually true and still worth money: shows up fast, does the heavy filthy
+ * work, tells you the price before starting, and admits what he doesn't know.
+ * Do not "improve" this copy by adding credentials. Add them when he earns them.
+ */
+import { TRAVEL } from './services.js'
+
+const FREE_MI = TRAVEL.freeRadiusMiles
+const PER_MI = TRAVEL.perMile.toFixed(2)
+
+export const BRAND = {
+  name: 'The Koi Wrangler',
+  nameStacked: ['The Koi', 'Wrangler'],
+  tagline: 'Pond cleaning, done honest.',
+  phone: '(555) 014-5647',
+  phoneHref: 'tel:+15550145647',
+  email: 'howdy@koiwrangler.com',
+  area: `Statewide — first ${FREE_MI} miles free`,
+  hours: 'Mon – Sat, 7am – 6pm',
+}
+
+export const HERO = {
+  kicker: 'Pond cleaning & safe koi handling',
+  headline: 'Pond cleaning, done honest.',
+  sub: 'I drain it, muck it out, scrub it down and put your fish back safe. Prices on the website, no sales pitch, no surprise invoice.',
+  ctaPrimary: { label: 'Book online', href: '#book' },
+  ctaSecondary: { label: 'See prices', href: '#services' },
+  scrollHint: 'Scroll to dive in',
+}
+
+/** The honest pitch. These are the only claims the site makes. */
+export const PROMISES = [
+  { icon: 'watch', emoji: '🕖', title: 'I show up when I said',
+    body: 'A booked time is a real time. If I am running late you get a text, not silence.' },
+  { icon: 'tag', emoji: '🏷️', title: 'The price is on the website',
+    body: 'Pick your pond size and see the number before you ever talk to me. No "it depends" games.' },
+  { icon: 'wader', emoji: '💪', title: 'I do the filthy part',
+    body: 'Waders on, muck out, scrub the rocks. This is labour you do not want to do on a Saturday.' },
+  { icon: 'ledger', emoji: '🤝', title: 'I tell you what I do not know',
+    body: 'I am new to koi. I am good at cleaning. If your fish looks sick I will say so and point you to a vet or a breeder instead of guessing with your $2,000 fish.' },
+]
+
+export const ABOUT = {
+  eyebrow: 'Straight talk',
+  title: 'New business. Old-fashioned about it.',
+  body: [
+    'I am Michael, and The Koi Wrangler is a new outfit — so let me be upfront about what that means for you.',
+    'I am not a koi expert yet. I am not going to diagnose a sick fish, prescribe medication, or pretend I have twenty years behind me. What I am is strong, careful, insured, and honest about my own limits, which is more than you can say for some of the operations that will quote you over the phone sight-unseen.',
+    'What I do is the hard, dirty, physical work a pond needs: get the water out, get the muck out, get the algae off the rocks, handle your fish gently with the right nets and an aerated holding tank, and put everything back the way it should be. I quote it up front, I show up when I said, and if I break something I replace it.',
+    'I am learning the fish side properly — reading, shadowing breeders, and I will put real credentials on this page the day I actually hold them. Not before.',
+  ],
+  signature: '— Michael, owner & the only employee',
+}
+
+export const FAQ = [
+  { q: 'Will you hurt my koi?',
+    a: 'Nets matter more than skill here: I use soft knotless nets that do not strip their protective slime coat, move them into a tank of their own pond water with an air stone, match temperature before they go back, and count heads in and out. No chasing, no buckets, no sudden temperature swings.' },
+  { q: 'Can you tell me why my fish is sick?',
+    a: 'No, and I will not pretend otherwise. I can tell you your water chemistry is off, because I test it. For anything on the fish itself — ulcers, flashing, gasping, white spots — you want a koi vet or an experienced breeder, and I will happily give you names.' },
+  { q: 'How often does a pond need a full clean?',
+    a: 'Most backyard koi ponds want one full deep clean a year, usually spring, plus ongoing upkeep in between. If the bottom muck is more than an inch deep or the water smells like a ditch, it is time.' },
+  { q: 'Do I have to sign a contract for monthly keeping?',
+    a: 'No. Monthly Pond Keeping is month to month and you can stop whenever you like. If it needed a contract to keep you, it was not worth paying for.' },
+  { q: 'How far will you travel?',
+    a: `Statewide. The first ${FREE_MI} miles from my base are free, after that it is $${PER_MI} a mile round trip and the exact figure is in your quote before you agree to anything.` },
+  { q: 'What if it costs more once you see it?',
+    a: 'Then I stop and tell you, with a number, before any extra work happens. The booking price assumes a normal pond for its size. Genuine surprises — a cracked liner, a dead pump, four years of leaf mulch — get quoted on the spot and you can say no.' },
+  { q: 'Are you insured?',
+    a: 'Yes, general liability. Certificate available on request before I set foot on your property.' },
+  { q: 'Do you clean anything besides koi ponds?',
+    a: 'Water features, fountains, goldfish ponds, farm troughs — yes. Swimming pools — no, wrong trade entirely.' },
+]
+
+export const AREA = {
+  eyebrow: 'Service area',
+  title: 'Statewide, and honest about the drive',
+  body: `I will come to you anywhere in the state. The first ${FREE_MI} miles from base costs you nothing extra. Beyond that it is $${PER_MI} per mile round trip, calculated and shown to you in the quote — not slipped onto the invoice afterwards.`,
+}
+
+export const BOOKING_INTRO = {
+  eyebrow: 'Book online',
+  title: 'Four questions, a real price, done',
+  body: 'Tell me the pond size and what it needs. You will see the exact price as you go, and your summary is ready to send the moment you are done.',
+}

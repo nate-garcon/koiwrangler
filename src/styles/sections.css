@@ -1,0 +1,1532 @@
+/* =========================================================================
+   THE KOI WRANGLER — page sections.  Owned by the design-engineer agent.
+   Every class invented here is prefixed `sx-`. Primitives (.wrap, .btn,
+   .card, .eyebrow, .rule-west, .reveal, .visually-hidden) come from base.css.
+
+   DIRECTION
+   ---------
+   The WebGL pond is the background of the WHOLE document, not just the hero.
+   Content rides over it as inset translucent paper PANELS, so the water is
+   visible down both edges, between every section, and through the blur. There
+   is no cream "content zone" and therefore no hard seam to disguise.
+
+   TYPE: Rye lives only on h1/h2/price numerals/the about stamp. Everything
+   smaller is Bitter 700. See base.css for the contract.
+
+   MOTION: `transform` belongs to the reveal + hover layer. `translate` (the
+   independent transform property) belongs to the scroll-linked layer, so the
+   two compose instead of fighting. Nothing here animates layout.
+   ========================================================================= */
+
+:root {
+  --sx-header-h: 58px;
+  --sx-scrim-x: 50%;
+
+  /* panel geometry */
+  --sx-gutter: clamp(0.75rem, 3.2vw, 2.75rem);
+  --sx-panel-w: min(1248px, 100% - 2 * var(--sx-gutter));
+  --sx-panel-a: 0.88;              /* measured: holds 4.5:1 over dark water */
+  --sx-drift: calc(var(--sx-gutter) * 0.5);   /* lateral drift amplitude */
+
+  /* panel surfaces, as raw channels so alpha can be applied per panel.
+     ~6-8% L* apart, which is what it takes for the alternation to read. */
+  --sx-surf-base: 250 246 239;     /* paper-050  L* 97 */
+  --sx-surf-high: 255 253 249;     /* near white L* 99 */
+  --sx-surf-mid:  245 236 222;     /* warm       L* 93 */
+  --sx-surf-deep: 237 225 203;     /* deep paper L* 89 */
+
+  /* a rule that reads on every panel tint; --rule is invisible on warm paper */
+  --sx-divider: rgb(107 68 37 / 0.2);
+
+  /* live accent, re-pointed per story chapter further down */
+  --sx-accent: var(--brass-500);
+}
+@media (min-width: 900px) {
+  :root { --sx-header-h: 78px; --sx-scrim-x: 34%; }
+}
+
+/* =========================================================================
+   1. HEADER — glass over water the whole way down
+   ========================================================================= */
+.sx-header {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 40;
+  background: transparent;
+  /* scrollY > ~24px drives the floating plate in. --story-t is 0..1 over the
+     whole document (~11000px), so 24px is ~0.0022 of it. */
+  --sx-glass: clamp(0, calc(var(--story-t) * 430), 1);
+}
+/* soft top scrim so white nav type survives over moving water. Always on. */
+.sx-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(5 11 18 / 0.66), rgb(5 11 18 / 0));
+}
+/* the floating plate: fades in on scroll, thickens once the dive is done */
+.sx-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgb(6 13 21 / 0.55);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border-bottom: 1px solid rgb(232 200 121 / 0.18);
+  opacity: var(--sx-glass);
+  transition: opacity var(--dur-2) var(--ease), background var(--dur-2) var(--ease);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sx-header::after { background: rgb(6 13 21 / 0.88); }
+}
+/* --sx-glass above is the fallback. Where scroll timelines exist the plate is
+   driven by the compositor instead: the hero's orange CTA must never be able
+   to slide through the wordmark, not even on a frame where the main thread is
+   too busy to have published --story-t yet. This is a state, not decoration,
+   so it is deliberately outside the reduced-motion query. */
+@supports (animation-timeline: scroll()) {
+  @keyframes sx-header-glass { from { opacity: 0; } to { opacity: 1; } }
+  .sx-header::after {
+    animation: sx-header-glass linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 110px;
+  }
+}
+.sx-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: var(--sx-header-h);
+  padding-inline: var(--sp-3);
+}
+@media (min-width: 900px) {
+  .sx-header__inner { padding-inline: var(--sp-4); }
+}
+
+/* `.is-solid` used to mean "cream header over cream content". There is no
+   cream content zone any more, so it now means "denser glass": the backdrop
+   is water from the first pixel to the last, and light type is correct the
+   whole way down. */
+.sx-header.is-solid::after {
+  background: rgb(6 13 21 / 0.76);
+  opacity: 1;
+  box-shadow: 0 8px 28px rgb(4 10 17 / 0.3);
+}
+
+/* --- wordmark — Bitter 800, because Rye at 20px is mush --- */
+.sx-wordmark {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  gap: var(--sp-2);
+  min-width: 0;
+  text-decoration: none;
+  color: var(--koi-white);
+}
+.sx-wordmark__mark {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  color: var(--brass-300);
+}
+.sx-wordmark__text {
+  display: grid;
+  font-family: var(--font-body);
+  font-weight: 800;
+  line-height: 1.05;
+  text-transform: uppercase;
+  text-shadow: 0 1px 10px rgb(5 11 18 / 0.85);
+}
+.sx-wordmark__a { font-size: 0.64rem; letter-spacing: 0.2em; color: var(--brass-300); }
+.sx-wordmark__b { font-size: 1rem; letter-spacing: 0.06em; }
+@media (min-width: 900px) {
+  .sx-wordmark__mark { width: 44px; height: 44px; }
+  .sx-wordmark__a { font-size: 0.7rem; }
+  .sx-wordmark__b { font-size: 1.16rem; }
+}
+
+/* --- desktop nav --- */
+.sx-nav { display: none; }
+@media (min-width: 900px) {
+  .sx-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-inline-start: auto;
+  }
+}
+.sx-nav__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--koi-white);
+  padding-block: 0.7rem;
+  border-bottom: 2px solid transparent;
+  text-shadow: 0 1px 10px rgb(5 11 18 / 0.9);
+  transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.sx-nav__link:hover { border-bottom-color: var(--brass-400); color: var(--brass-300); }
+
+/* --- desktop actions --- */
+.sx-header__actions { display: none; }
+@media (min-width: 900px) {
+  .sx-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-inline-start: var(--sp-5);
+  }
+}
+.sx-tel {
+  display: grid;
+  align-content: center;
+  min-height: 44px;
+  line-height: 1.2;
+  text-decoration: none;
+  color: var(--koi-white);
+  text-shadow: 0 1px 10px rgb(5 11 18 / 0.9);
+}
+.sx-tel__label {
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.62rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--brass-300);
+}
+.sx-tel__num { font-weight: var(--w-strong); font-size: var(--step--1); white-space: nowrap; }
+.sx-tel:hover .sx-tel__num { text-decoration: underline; }
+
+/* the one orange button in the header — see .btn--koi in base.css */
+.sx-header__book { background: var(--cta); color: var(--cta-ink); }
+.sx-header__book:hover { background: #e46428; }
+
+/* --- mobile menu --- */
+.sx-menu { position: relative; margin-inline-start: auto; }
+@media (min-width: 900px) { .sx-menu { display: none; } }
+
+.sx-menu__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  min-height: 44px;
+  padding-inline: 0.8rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  list-style: none;
+  color: var(--koi-white);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1.5px rgb(232 200 121 / 0.55);
+}
+.sx-menu__btn::-webkit-details-marker { display: none; }
+.sx-menu__btn::marker { content: ''; }
+.sx-menu[open] .sx-menu__btn {
+  background: var(--brass-400);
+  color: var(--accent-ink);
+  box-shadow: none;
+}
+
+.sx-menu__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.45rem);
+  width: min(80vw, 300px);
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  background: var(--paper-000);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--brass-400);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+.sx-menu__nav { display: grid; }
+.sx-menu__link {
+  display: block;
+  padding: 0.8rem 0.4rem;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step-0);
+  letter-spacing: var(--ls-sentence);
+  text-decoration: none;
+  color: var(--fg);
+  border-bottom: 1px solid var(--rule);
+}
+.sx-menu__link:last-child { border-bottom: 0; color: var(--leather-700); }
+.sx-menu__link:hover { background: var(--paper-050); }
+.sx-menu__tel {
+  display: block;
+  margin-top: var(--sp-2);
+  padding: 0.6rem 0.4rem;
+  font-weight: var(--w-strong);
+  color: var(--fg);
+}
+.sx-menu__hours {
+  margin: 0 0 0 0.4rem;
+  font-size: var(--step--1);
+  color: var(--fg-muted);
+}
+
+/* =========================================================================
+   2. HERO — two columns: copy left, an empty KOI STAGE right.
+   Column 2 carries no content on purpose. The fixed WebGL canvas shows
+   through it, and the fish now have somewhere to be.
+   ========================================================================= */
+.sx-hero {
+  position: relative;
+  display: grid;
+  align-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-block: calc(var(--sx-header-h) + var(--sp-6)) calc(var(--sp-7) + var(--sp-4));
+  background: transparent;
+}
+.sx-hero__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* centred at 34%, so the scrim falls off ACROSS the koi stage instead of
+     dimming the water the fish are swimming in */
+  background:
+    radial-gradient(112% 78% at var(--sx-scrim-x) 46%,
+      rgb(4 10 17 / 0.9) 0%,
+      rgb(4 10 17 / 0.74) 32%,
+      rgb(4 10 17 / 0.3) 58%,
+      rgb(4 10 17 / 0) 78%),
+    linear-gradient(180deg, rgb(4 10 17 / 0.3) 0%, rgb(4 10 17 / 0) 30%);
+}
+.sx-hero__inner { position: relative; }
+@media (min-width: 1100px) {
+  .sx-hero__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 47fr) minmax(0, 53fr);
+    align-items: start;
+  }
+  /* every child stays in column 1; column 2 is the stage */
+  .sx-hero__inner > * { grid-column: 1; }
+}
+
+.sx-hero__kicker {
+  margin: 0 0 var(--sp-3);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--brass-300);
+  max-width: none;
+  text-shadow: 0 1px 12px rgb(4 10 17 / 0.95);
+}
+.sx-hero__title {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--step-4);
+  line-height: 1.02;
+  max-width: 13ch;        /* three lines in a ~500px column; clears the koi */
+  color: var(--koi-white);
+  text-shadow: 0 2px 28px rgb(4 10 17 / 0.95), 0 1px 3px rgb(4 10 17 / 0.9);
+}
+.sx-hero__sub {
+  margin: 0 0 var(--sp-5);
+  max-width: 38ch;
+  font-size: var(--step-1);
+  line-height: 1.5;
+  color: var(--fg-on-dark);
+  text-shadow: 0 1px 16px rgb(4 10 17 / 0.95);
+}
+.sx-hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: 0;
+}
+/* the hero's primary is one of the three orange buttons on the page */
+.sx-hero__ctas .btn:not(.btn--ghost):not(.btn--brass) {
+  background: var(--cta);
+  color: var(--cta-ink);
+}
+.sx-hero__ctas .btn:not(.btn--ghost):not(.btn--brass):hover { background: #e46428; }
+
+/* the meta line belongs to the CTAs, not to the empty space below them */
+.sx-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0 0;
+  max-width: none;
+  font-size: var(--step--1);
+  letter-spacing: 0.04em;
+  color: var(--fg-on-dark-muted);
+  text-shadow: 0 1px 12px rgb(4 10 17 / 0.95);
+}
+.sx-hero__dot { color: var(--brass-400); }
+
+/* --- scroll hint: on the TEXT COLUMN's left axis, not the viewport's centre.
+       A horizontal lockup — 48px brass hairline, caps label, arrow. --- */
+.sx-hero__hint {
+  position: absolute;
+  inset-inline: 0;
+  bottom: var(--sp-5);
+  width: min(100%, var(--maxw));
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--koi-white);
+  text-shadow: 0 1px 14px rgb(4 10 17 / 0.95);
+  pointer-events: none;
+  opacity: clamp(0, min(calc(1 - var(--story-t) * 55), calc(1 - var(--dive) * 5)), 1);
+}
+.sx-hero__hint::before {
+  content: '';
+  flex: none;
+  width: 48px;
+  height: 1px;
+  background: var(--brass-400);
+  box-shadow: 0 0 10px rgb(216 169 74 / 0.5);
+}
+.sx-hero__arrow {
+  display: flex;
+  align-items: center;
+  color: var(--brass-300);
+  transform-origin: 50% 30%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sx-hero__arrow { animation: sx-bob 2.1s var(--ease) infinite; }
+}
+@keyframes sx-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+/* Hero copy sinks and fades as the camera descends through the surface.
+   --dive (published by main.js every frame) is the base driver; where scroll
+   timelines exist they take over, because they run on the compositor and
+   cannot go stale behind a busy main thread. Same motion either way. */
+@media (prefers-reduced-motion: no-preference) {
+  .sx-hero__inner {
+    translate: 0 calc(var(--dive) * -60px);
+    opacity: clamp(0, calc(1 - var(--dive) * 1.4), 1);
+  }
+  @supports (animation-timeline: view()) {
+    @keyframes sx-hero-sink {
+      from { translate: 0 0; opacity: 1; }
+      to   { translate: 0 -60px; opacity: 0; }
+    }
+    .sx-hero__inner {
+      animation: sx-hero-sink linear both;
+      animation-timeline: view();
+      animation-range: exit 12% exit 88%;
+    }
+    @keyframes sx-hint-out { from { opacity: 1; } to { opacity: 0; } }
+    .sx-hero__hint {
+      animation: sx-hint-out linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 200px;
+    }
+  }
+}
+
+/* =========================================================================
+   3. THE HANDOFF — there is no hard seam left, so this is a short release:
+   a lantern-lit horizon rule and a ripple texture, then the first panel.
+   The sticky-header sentinel still lives in here (markup owned by hero.js).
+   ========================================================================= */
+.sx-band {
+  position: relative;
+  height: 24vh;
+  min-height: 150px;
+  background-image:
+    repeating-linear-gradient(180deg,
+      rgb(232 200 121 / 0.045) 0 1px, rgb(232 200 121 / 0) 1px 7px),
+    linear-gradient(180deg,
+      rgb(4 10 17 / 0.5) 0%,
+      rgb(4 10 17 / 0.16) 58%,
+      rgb(4 10 17 / 0) 100%);
+  background-size: 100% 40%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+}
+/* 1px brass horizon at the band's 52% mark */
+.sx-band::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 52%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    rgb(216 169 74 / 0) 0%,
+    rgb(216 169 74 / 0.4) 16%,
+    rgb(216 169 74 / 0.4) 84%,
+    rgb(216 169 74 / 0) 100%);
+}
+.sx-sentinel {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 300vh;
+  pointer-events: none;
+}
+
+/* =========================================================================
+   4. THE PAPER STACK — transparent. The pond is the page background.
+   Content rides over it as inset translucent panels with water down both
+   edges and between every section, so there is no seam to disguise and no
+   stray hairline pretending to be a division.
+   ========================================================================= */
+.sx-paper {
+  position: relative;
+  background: transparent;
+  display: grid;
+  gap: var(--sp-6);
+  padding-block: 0 var(--sp-6);
+}
+@media (min-width: 760px) {
+  .sx-paper { gap: 4rem; }
+}
+
+.sx-section {
+  position: relative;
+  width: var(--sx-panel-w);
+  margin-inline: auto;
+  padding-block: var(--sp-6);
+  border: 1px solid rgb(232 220 201 / 0.6);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgb(255 246 230 / 0.16) 0%, rgb(255 246 230 / 0.04) 42%, rgb(255 246 230 / 0.1) 100%),
+    rgb(var(--sx-surf, var(--sx-surf-base)) / var(--sx-panel-a));
+  backdrop-filter: blur(12px) saturate(1.18);
+  -webkit-backdrop-filter: blur(12px) saturate(1.18);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 18px 50px rgb(4 10 17 / 0.28);
+  scroll-margin-top: calc(var(--sx-header-h) + var(--sp-4));
+  /* muted copy is deepened inside panels: over the darkest water the panel
+     composites down to ~#dfdcd6, and #5c5349 only just clears AA there. */
+  --fg-muted: #544b41;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sx-section { --sx-panel-a: 0.96; }
+}
+
+/* a brass capillary along the panel's top edge — the live story accent */
+.sx-section::before {
+  content: '';
+  position: absolute;
+  inset-inline: var(--sp-5);
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    rgb(0 0 0 / 0) 0%, var(--sx-accent) 22%, var(--sx-accent) 78%, rgb(0 0 0 / 0) 100%);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity var(--dur-2) var(--ease), background var(--dur-3) var(--ease);
+}
+
+/* --- panel surfaces: ~6-8% L* apart so the alternation actually reads --- */
+.sx-promises { --sx-surf: var(--sx-surf-base); }
+.sx-services { --sx-surf: var(--sx-surf-deep); }
+.sx-gallery  { --sx-surf: var(--sx-surf-high); }
+.sx-about    { --sx-surf: var(--sx-surf-mid); }
+.sx-area     { --sx-surf: var(--sx-surf-high); }
+.sx-book     { --sx-surf: var(--sx-surf-deep); }
+.sx-shop     { --sx-surf: var(--sx-surf-mid); }
+.sx-faq      { --sx-surf: var(--sx-surf-high); }
+
+/* --- rhythm: 88px is the default, not the only value --- */
+@media (min-width: 760px) {
+  .sx-section { padding-block: var(--sp-7); }
+  .sx-services, .sx-book, .sx-shop { padding-block: 7.5rem; }
+  .sx-area, .sx-gallery { padding-block: 6rem; }
+  /* and the gaps vary too, so the stack breathes unevenly on purpose */
+  .sx-gallery, .sx-book { margin-top: 2rem; }
+}
+
+/* =========================================================================
+   5. SHARED SECTION FURNITURE
+   ========================================================================= */
+.sx-section__head {
+  max-width: 62ch;
+  margin-bottom: var(--sp-5);
+}
+.sx-h2 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--step-3);
+  line-height: 1.16;
+  color: var(--fg);
+}
+.sx-section__lede {
+  margin: 0;
+  max-width: 56ch;
+  font-size: var(--step-1);
+  line-height: 1.55;
+  color: var(--fg-muted);
+}
+
+/* staggered reveal (base.css owns the transitions + reduced-motion reset) */
+.sx-promise, .sx-svc, .sx-plate, .sx-faq__item {
+  transition-delay: calc(var(--sx-i, 0) * 70ms);
+}
+.sx-promise::before, .sx-faq__item::before { display: none; }
+
+/* =========================================================================
+   6. PROMISES — four COLUMNS, not four cards.
+   A card that is 40% empty looks broken; a column that is 40% empty looks
+   composed. No border, no fill, no shadow, no medal ring — 1px vertical
+   rules do the dividing.
+   ========================================================================= */
+.sx-promises__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sx-promise.card,
+.sx-promise {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+/* one column: horizontal separators */
+.sx-promise + .sx-promise {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--rule);
+}
+
+@media (min-width: 620px) {
+  .sx-promises__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--sp-5);
+    align-items: stretch;
+  }
+  .sx-promise + .sx-promise { margin-top: 0; padding-top: 0; border-top: 0; }
+  .sx-promise { padding-inline: var(--sp-4) 0; }
+  .sx-promise:nth-child(2n) { border-left: 1px solid var(--sx-divider); }
+  .sx-promise:nth-child(2n + 1) { padding-left: 0; }
+  /* one-line and two-line titles must not leave the bodies on four baselines */
+  .sx-promise__title { min-height: 2.44em; }
+}
+@media (min-width: 1000px) {
+  .sx-promises__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto auto auto;
+    row-gap: 0;
+  }
+  /* subgrid: icon row, title row and body row are shared across all four
+     columns, so the four read as one ruled table rather than four cards */
+  .sx-promise {
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    padding-inline: var(--sp-5);
+    border-left: 1px solid var(--sx-divider);
+  }
+  .sx-promise__title { min-height: 0; }
+  .sx-promise:first-child { padding-left: 0; border-left: 0; }
+  .sx-promise:last-child { padding-right: 0; }
+}
+
+/* =========================================================================
+   6b. THE DRAWN MARKS — `.sx-ico`
+   Every icon is `fill: none; stroke: currentColor`, so `color` is the whole
+   interface. Leather on paper (it is the colour of the eyebrows and the
+   plate art, so the marks join that family); brass wherever a mark sits on
+   night water, where leather would disappear.
+   ========================================================================= */
+.sx-ico {
+  display: block;
+  flex: none;
+  color: var(--leather-500);
+}
+.sx-header .sx-ico,
+.sx-hero .sx-ico,
+.sx-footer .sx-ico { color: var(--brass-300); }
+
+.sx-promise__ico {
+  width: 40px;
+  height: 40px;
+  /* a hair more presence than the body rules, without going brass-bright */
+  color: var(--leather-500);
+  transition: transform var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease);
+}
+
+/* the medal ring framed the icons like lockets. Gone. */
+.sx-promise__medal,
+.sx-promise__mark {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 40px;
+  height: 40px;
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--brass-600);
+}
+/* a brass hairline under the mark: a stamp on the page, not a locket */
+.sx-promise__mark::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -0.55rem;
+  width: 22px;
+  height: 1px;
+  background: var(--brass-500);
+  opacity: 0.8;
+}
+.sx-promise__mark { position: relative; }
+.sx-promise__title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step-1);
+  line-height: 1.22;
+  letter-spacing: var(--ls-sentence);
+  color: var(--fg);
+}
+.sx-promise__body {
+  margin: 0;
+  max-width: 36ch;
+  color: var(--fg-muted);
+  font-size: var(--step--1);
+  line-height: 1.6;
+}
+
+/* head spans 7 of 12 columns; the right column carries a large section mark */
+@media (min-width: 1000px) {
+  .sx-promises > .wrap {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--sp-4);
+  }
+  .sx-promises .sx-section__head { grid-column: 1 / 8; grid-row: 1; max-width: none; }
+  .sx-promises__grid { grid-column: 1 / -1; grid-row: 2; }
+  .sx-promises > .wrap::after {
+    content: '04' / '';
+    grid-column: 9 / -1;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    font-family: var(--font-display);
+    font-size: clamp(4.5rem, 8.5vw, 8.5rem);
+    line-height: 0.78;
+    letter-spacing: 0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgb(184 134 42 / 0.45);
+    pointer-events: none;
+    user-select: none;
+    translate: calc(var(--scroll-dir) * var(--scroll-speed) * -22px) 0;
+  }
+}
+
+/* =========================================================================
+   7. SERVICES
+   ========================================================================= */
+.sx-sizer { margin: 0 0 var(--sp-5); }
+.sx-sizer__set { margin: 0; padding: 0; border: 0; min-width: 0; }
+.sx-sizer__legend {
+  padding: 0;
+  margin-bottom: var(--sp-2);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--leather-500);
+}
+.sx-seg {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  gap: 2px;
+  padding: 0;
+  background: var(--rule-strong);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.sx-seg__opt { display: block; }
+.sx-seg__face {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.1rem;
+  min-height: 60px;
+  padding: 0.6rem 0.5rem;
+  text-align: center;
+  background: var(--paper-000);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.sx-seg__face:hover { background: var(--paper-050); }
+.sx-seg__label {
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step-0);
+  line-height: 1.15;
+  letter-spacing: var(--ls-sentence);
+}
+.sx-seg__gal { font-size: 0.74rem; color: var(--fg-muted); line-height: 1.2; }
+.sx-seg__input:checked + .sx-seg__face { background: var(--brass-400); color: var(--accent-ink); }
+.sx-seg__input:checked + .sx-seg__face .sx-seg__gal { color: var(--accent-ink); }
+.sx-seg__input:focus-visible + .sx-seg__face { outline: 3px solid var(--brass-600); outline-offset: -3px; }
+
+.sx-sizer__hint {
+  margin: var(--sp-2) 0 0;
+  max-width: none;
+  font-size: var(--step--1);
+  color: var(--fg-muted);
+}
+.sx-sizer__hint strong {
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  color: var(--fg);
+  margin-right: 0.4em;
+}
+
+/* align-items: stretch + height:100% lets the existing `margin-top: auto`
+   on the CTA bottom every card's button out on ONE baseline. */
+.sx-services__grid {
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
+  align-items: stretch;
+  list-style: none;
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+}
+.sx-svc {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  overflow: hidden;
+  background: var(--paper-000);
+}
+.sx-svc--popular { padding-top: calc(var(--sp-4) + 1.7rem); }
+.sx-svc--popular::before { display: none; }
+.sx-svc__ribbon {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  margin: 0;
+  max-width: none;
+  padding: 0.46rem;
+  background: linear-gradient(180deg, var(--brass-300), var(--brass-500));
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.7rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  text-align: center;
+}
+.sx-svc--urgent { box-shadow: var(--shadow-sm), inset 5px 0 0 var(--koi-red); }
+.sx-svc__urgent {
+  justify-self: start;
+  margin: 0;
+  max-width: none;
+  padding: 0.24rem 0.62rem;
+  border-radius: 999px;
+  background: var(--koi-red);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.68rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+}
+.sx-svc__head { display: grid; justify-items: start; gap: 0.4rem; }
+.sx-svc__name {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step-1);
+  line-height: 1.2;
+  letter-spacing: var(--ls-sentence);
+}
+.sx-svc__tagline { margin: 0; max-width: none; font-size: var(--step--1); color: var(--fg-muted); }
+
+.sx-svc__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.6rem;
+  margin: 0;
+  max-width: none;
+  padding-block: var(--sp-2);
+  border-block: 1px solid var(--rule);
+}
+/* price numerals: Rye, at --step-2, which is where Rye starts working */
+.sx-svc__amount {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  line-height: 1.05;
+  color: var(--fg);
+}
+.sx-svc__unit { font-size: var(--step--1); color: var(--fg-muted); }
+.sx-svc__pricenote { margin: 0; max-width: none; font-size: 0.78rem; color: var(--fg-muted); }
+
+.sx-svc__dur {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin: 0;
+  max-width: none;
+}
+.sx-svc__dur-key {
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.7rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--leather-500);
+}
+.sx-svc__dur-val { font-size: var(--step--1); font-weight: var(--w-strong); color: var(--fg); }
+
+.sx-svc__includes {
+  display: grid;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--step--1);
+  color: var(--fg-muted);
+}
+.sx-svc__includes li { position: relative; padding-left: 1.5em; }
+.sx-svc__includes li::before {
+  content: '';
+  position: absolute;
+  left: 0.1em;
+  top: 0.52em;
+  width: 0.62em;
+  height: 0.62em;
+  border: 1.5px solid var(--brass-500);
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+.sx-svc__cta { margin-top: auto; align-self: start; }
+
+.sx-travel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  max-width: none;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--paper-000);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--brass-400);
+  border-radius: var(--radius);
+  font-size: var(--step--1);
+  color: var(--fg-muted);
+}
+.sx-travel__tag {
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.7rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--leather-500);
+}
+
+/* =========================================================================
+   8. GALLERY — the asymmetric one. Head holds the left column; the first
+   plate is pulled up into the right column beside it, and the remaining two
+   sit below on an offset baseline. Drawn, never stock.
+   ========================================================================= */
+.sx-gallery__grid {
+  display: grid;
+  gap: var(--sp-5) var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sx-plate { margin: 0; }
+.sx-plate__frame {
+  position: relative;
+  padding: var(--sp-3);
+  background: var(--paper-000);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  outline: 1px solid var(--rule);
+  outline-offset: 4px;
+  transition: transform var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+  transform: rotate(calc(var(--scroll-dir) * var(--scroll-speed) * -0.5deg));
+}
+.sx-plate:hover .sx-plate__frame { box-shadow: var(--shadow-md); }
+.sx-plate__art {
+  width: 100%;
+  height: auto;
+  color: var(--leather-500);
+  opacity: 0.8;
+}
+.sx-plate__badge {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  margin: 0;
+  max-width: none;
+  padding: 0.24rem 0.6rem;
+  background: var(--paper-100);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: 0.66rem;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.sx-plate__cap {
+  margin: var(--sp-3) 0 0;
+  max-width: 34ch;
+  font-size: var(--step--1);
+  color: var(--fg-muted);
+}
+.sx-gallery__foot { margin-top: var(--sp-5); }
+
+@media (min-width: 1000px) {
+  .sx-gallery > .wrap {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--sp-4);
+    row-gap: var(--sp-5);
+    align-items: start;
+  }
+  .sx-gallery .sx-section__head {
+    grid-column: 1 / 7;
+    grid-row: 1;
+    max-width: none;
+    margin-bottom: 0;
+  }
+  /* the plate list spans the full width and overlaps the head's row, with
+     nothing of its own in columns 1-6 of that row */
+  .sx-gallery__grid {
+    grid-column: 1 / -1;
+    grid-row: 1 / span 2;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--sp-5) var(--sp-4);
+  }
+  .sx-gallery__grid > .sx-plate:nth-child(1) { grid-column: 8 / -1; grid-row: 1; }
+  .sx-gallery__grid > .sx-plate:nth-child(2) { grid-column: 1 / 6; grid-row: 2; }
+  .sx-gallery__grid > .sx-plate:nth-child(3) { grid-column: 7 / 12; grid-row: 2; margin-top: var(--sp-6); }
+  .sx-gallery__foot { grid-column: 1 / -1; grid-row: 3; margin-top: 0; }
+}
+
+/* =========================================================================
+   9. ABOUT
+   ========================================================================= */
+.sx-about__grid { display: grid; gap: var(--sp-5); }
+@media (min-width: 900px) {
+  .sx-about__grid {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: var(--sp-6);
+    align-items: start;
+  }
+  /* the body copy is five times the height of the stamp; let the stamp ride
+     down with the reader rather than leaving 400px of empty column */
+  .sx-about__aside {
+    position: sticky;
+    top: calc(var(--sx-header-h) + var(--sp-4));
+  }
+}
+.sx-about__aside {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-4);
+  text-align: center;
+  background: var(--paper-050);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 0 4px var(--paper-000), inset 0 0 0 5px var(--rule);
+}
+.sx-about__brandmark { color: var(--brass-600); }
+/* the about stamp keeps Rye: --step-2 is where it starts reading as lettering */
+.sx-about__stamp {
+  margin: 0;
+  max-width: none;
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  line-height: 1;
+  color: var(--leather-700);
+}
+.sx-about__stampsub {
+  margin: 0;
+  max-width: 24ch;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+}
+.sx-about__body { max-width: 68ch; }
+.sx-about__p { color: var(--fg-muted); }
+.sx-about__p--lead { font-size: var(--step-1); line-height: 1.55; color: var(--fg); }
+.sx-about__sig {
+  display: inline-block;
+  margin: var(--sp-4) 0 0;
+  padding-top: var(--sp-3);
+  border-top: 2px solid var(--brass-400);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-style: italic;
+  font-size: var(--step-1);
+  color: var(--leather-700);
+}
+
+/* =========================================================================
+   10. SERVICE AREA
+   ========================================================================= */
+.sx-area__grid { display: grid; gap: var(--sp-5); }
+@media (min-width: 900px) {
+  .sx-area__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 430px);
+    gap: var(--sp-6);
+    align-items: center;
+  }
+}
+.sx-area__copy p { color: var(--fg-muted); }
+.sx-area__legend {
+  display: grid;
+  gap: var(--sp-3);
+  list-style: none;
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+}
+.sx-area__key {
+  position: relative;
+  display: grid;
+  gap: 0.05rem;
+  padding-left: 2rem;
+  font-size: var(--step--1);
+  color: var(--fg-muted);
+}
+.sx-area__key strong {
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step-0);
+  color: var(--fg);
+}
+.sx-area__key::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.42em;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+}
+.sx-area__key--base::before { background: var(--cta); }
+.sx-area__key--free::before { background: var(--brass-300); border: 2px solid var(--brass-500); }
+.sx-area__key--wide::before { border: 2px dashed var(--leather-500); }
+
+.sx-area__fig { margin: 0; }
+.sx-ring {
+  width: 100%;
+  height: auto;
+  max-width: 430px;
+  margin-inline: auto;
+  rotate: calc(var(--scroll-dir) * var(--scroll-speed) * 0.7deg);
+}
+.sx-ring__wide { fill: none; stroke: var(--leather-500); stroke-width: 2; stroke-dasharray: 7 7; opacity: 0.6; }
+.sx-ring__mid  { fill: none; stroke: var(--rule-strong); stroke-width: 1.5; }
+.sx-ring__free { stroke: var(--brass-500); stroke-width: 2.5; }
+.sx-ring__stop-a { stop-color: var(--brass-300); stop-opacity: 0.42; }
+.sx-ring__stop-b { stop-color: var(--brass-400); stop-opacity: 0.1; }
+.sx-ring__base { fill: var(--cta); }
+.sx-ring__halo { fill: none; stroke: var(--cta); stroke-width: 1.5; opacity: 0.5; }
+.sx-ring__spoke path { fill: none; stroke: var(--brass-600); stroke-width: 1.6; stroke-linecap: round; }
+.sx-ring__spoke-out { fill: none; stroke: var(--leather-500); stroke-width: 1.6; stroke-dasharray: 5 5; stroke-linecap: round; }
+.sx-ring__pins circle { fill: var(--leather-500); opacity: 0.45; }
+.sx-area__cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+}
+
+/* =========================================================================
+   11. BOOKING + SHOP  (widgets injected by other modules)
+   ========================================================================= */
+.sx-book__alt { margin: var(--sp-3) 0 0; font-size: var(--step--1); color: var(--fg-muted); }
+/* a 44px hit area on an inline link, with the margins cancelling the padding
+   so the sentence's line box is unchanged */
+.sx-book__alt a { display: inline-block; padding-block: 0.9rem; margin-block: -0.9rem; }
+
+/* only visible before the widget agents mount anything */
+#booking-mount:empty::before,
+#shop-mount:empty::before {
+  content: 'Loading…';
+  display: grid;
+  place-items: center;
+  min-height: 150px;
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* =========================================================================
+   12. FAQ
+   ========================================================================= */
+.sx-faq__list {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: 74ch;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sx-faq__d {
+  background: rgb(255 255 255 / 0.6);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
+}
+.sx-faq__d[open] {
+  background: var(--paper-000);
+  border-color: var(--rule-strong);
+  box-shadow: var(--shadow-sm);
+}
+.sx-faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step-0);
+  line-height: 1.3;
+  letter-spacing: var(--ls-sentence);
+  color: var(--fg);
+}
+.sx-faq__q::-webkit-details-marker { display: none; }
+.sx-faq__q::marker { content: ''; }
+.sx-faq__q:hover { color: var(--leather-700); }
+.sx-faq__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--brass-300);
+  color: var(--accent-ink);
+  transition: transform 240ms var(--ease), background var(--dur-1) var(--ease);
+}
+.sx-faq__d[open] .sx-faq__icon { transform: rotate(180deg); background: var(--brass-400); }
+.sx-faq__a { padding: 0 var(--sp-3) var(--sp-4); }
+.sx-faq__a p { margin: 0; max-width: 62ch; color: var(--fg-muted); }
+
+@media (min-width: 1000px) {
+  .sx-faq > .wrap {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--sp-5);
+    align-items: start;
+  }
+  .sx-faq .sx-section__head {
+    grid-column: 1 / 6;
+    position: sticky;
+    top: calc(var(--sx-header-h) + var(--sp-4));
+    max-width: none;
+    margin-bottom: 0;
+  }
+  .sx-faq__list { grid-column: 6 / -1; max-width: none; gap: var(--sp-2); }
+  /* a brass hairline runs on down the head column so it is a rail, not a void */
+  .sx-faq .sx-section__head::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 140px;
+    margin-top: var(--sp-5);
+    background: linear-gradient(180deg, var(--sx-accent), rgb(0 0 0 / 0));
+    opacity: 0.55;
+  }
+}
+
+/* <details> used to snap open. Animate the disclosure itself. */
+.sx-faq__d::details-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: clip;
+  transition: grid-template-rows 320ms var(--ease), content-visibility 320ms allow-discrete;
+}
+.sx-faq__d[open]::details-content { grid-template-rows: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  .sx-faq__d::details-content { transition: none; }
+}
+
+/* =========================================================================
+   13. FOOTER — dark glass, so the pond runs under it to the last pixel
+   ========================================================================= */
+.sx-footer {
+  position: relative;
+  padding-top: var(--sp-6);
+  background: rgb(8 16 26 / 0.82);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-top: 3px solid var(--brass-500);
+  color: var(--koi-white);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sx-footer { background: rgb(8 16 26 / 0.96); }
+}
+.sx-footer__grid {
+  display: grid;
+  gap: var(--sp-5);
+  padding-bottom: var(--sp-6);
+}
+@media (min-width: 720px) {
+  .sx-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1040px) {
+  .sx-footer__grid { grid-template-columns: 1.1fr 1fr 0.7fr 1.4fr; gap: var(--sp-5); }
+}
+.sx-footer__svg { width: 46px; height: 46px; color: var(--brass-300); }
+.sx-footer__word {
+  display: grid;
+  margin: var(--sp-2) 0 var(--sp-1);
+  max-width: none;
+  line-height: 1.08;
+  text-transform: uppercase;
+}
+.sx-footer__word span:first-child {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--brass-300);
+}
+/* --step-2 is 24-32px: Rye is allowed to be lettering here */
+.sx-footer__word span:last-child {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  letter-spacing: 0.04em;
+}
+.sx-footer__tag { margin: 0; max-width: none; font-style: italic; color: var(--brass-300); }
+.sx-footer__h {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-body);
+  font-weight: var(--w-label);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--brass-300);
+}
+.sx-footer__list {
+  display: grid;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--fg-on-dark-muted);
+  font-size: var(--step--1);
+}
+.sx-footer__list li { min-height: 1.5rem; }
+.sx-footer__list a { display: inline-block; min-width: 44px; padding-block: 0.72rem; }
+.sx-footer a { color: var(--koi-white); text-decoration-color: rgb(232 200 121 / 0.6); }
+.sx-footer a:hover { color: var(--brass-300); }
+.sx-footer__note p { max-width: 42ch; font-size: var(--step--1); color: var(--fg-on-dark-muted); }
+.sx-footer__base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding-block: var(--sp-3);
+  border-top: 1px solid rgb(232 200 121 / 0.18);
+  font-size: var(--step--1);
+  color: var(--fg-on-dark-muted);
+}
+.sx-footer__base p { margin: 0; max-width: none; }
+.sx-footer__base a { display: inline-block; min-width: 44px; padding-block: 0.72rem; }
+
+/* =========================================================================
+   14. NARROW-SCREEN TRIMS
+   ========================================================================= */
+@media (max-width: 559px) {
+  /* the separator dot dangles when the meta line wraps */
+  .sx-hero__dot { display: none; }
+  .sx-hero__meta { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+}
+@media (max-width: 759px) {
+  .sx-section { border-radius: var(--radius); }
+  .sx-section::before { inset-inline: var(--sp-4); }
+}
+
+/* the booking link is the CTA of the mobile menu, not just another row */
+.sx-menu__link:last-child {
+  margin-top: var(--sp-2);
+  border-bottom: 0;
+  border-radius: var(--radius);
+  background: var(--cta);
+  color: var(--cta-ink);
+  text-align: center;
+}
+.sx-menu__link:last-child:hover { background: #e46428; }
+
+/* =========================================================================
+   15. MOTION — scroll-LINKED, not just scroll-triggered.
+   `transform` is the reveal/hover layer (base.css). `translate` is the
+   scroll layer, so the two compose. main.js publishes --story-t,
+   --chapter-t, --dive, --scroll-speed, --scroll-dir and <html data-chapter>
+   on :root every frame; CSS scroll-driven timelines (`view()`) give each
+   element its own local progress with no JS at all.
+   ========================================================================= */
+
+/* --- the live story accent: the brass capillary on every panel, and the
+       hero's hint rule, re-point as the chapters move --- */
+:root[data-chapter="dusk"]   { --sx-accent: var(--brass-400); }
+:root[data-chapter="dive"]   { --sx-accent: #86b4cc; }
+:root[data-chapter="murk"]   { --sx-accent: #718c44; --sx-panel-a: 0.9; }
+:root[data-chapter="clean"]  { --sx-accent: var(--brass-300); }
+:root[data-chapter="return"] { --sx-accent: var(--cta); }
+:root[data-chapter="dawn"]   { --sx-accent: var(--brass-300); }
+
+/* the capillary brightens with scroll velocity — the page feels driven */
+.sx-section::before {
+  opacity: clamp(0.3, calc(0.3 + var(--scroll-speed) * 0.7), 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* ---------------------------------------------------------------- hover */
+  .sx-svc:hover { translate: 0 -4px; box-shadow: var(--shadow-md); }
+  .sx-svc--urgent:hover { box-shadow: var(--shadow-md), inset 5px 0 0 var(--koi-red); }
+
+  /* the diamond bullets turn over, one after another */
+  .sx-svc__includes li::before { transition: transform 260ms var(--ease-out); }
+  .sx-svc:hover .sx-svc__includes li::before { transform: rotate(135deg); }
+  .sx-svc:hover .sx-svc__includes li:nth-child(1)::before { transition-delay: 0ms; }
+  .sx-svc:hover .sx-svc__includes li:nth-child(2)::before { transition-delay: 30ms; }
+  .sx-svc:hover .sx-svc__includes li:nth-child(3)::before { transition-delay: 60ms; }
+  .sx-svc:hover .sx-svc__includes li:nth-child(4)::before { transition-delay: 90ms; }
+  .sx-svc:hover .sx-svc__includes li:nth-child(5)::before { transition-delay: 120ms; }
+  .sx-svc:hover .sx-svc__includes li:nth-child(6)::before { transition-delay: 150ms; }
+  .sx-svc:hover .sx-svc__includes li:nth-child(7)::before { transition-delay: 180ms; }
+  .sx-svc:hover .sx-svc__includes li:nth-child(8)::before { transition-delay: 210ms; }
+
+  /* the plates redraw themselves under the cursor.
+     If the illustrator adds pathLength="1" to the paths, the attribute
+     selector below switches the dash unit over automatically. */
+  .sx-plate__art [pathLength] { --sx-dash: 1; }
+  @keyframes sx-draw {
+    from { stroke-dasharray: var(--sx-dash, 900); stroke-dashoffset: var(--sx-dash, 900); }
+    to   { stroke-dasharray: var(--sx-dash, 900); stroke-dashoffset: 0; }
+  }
+  .sx-plate:hover .sx-plate__art g > * { animation: sx-draw 900ms var(--ease-out); }
+  .sx-plate:hover .sx-plate__art { opacity: 1; }
+
+  /* --------------------------------------------------------- scroll-linked */
+  @supports (animation-timeline: view()) {
+    /* panels drift laterally in alternating directions as they pass, and
+       ride at a slightly different vertical rate from the page */
+    @keyframes sx-panel-drift {
+      from { translate: var(--sx-dx-a) var(--sx-dy-a); }
+      to   { translate: var(--sx-dx-b) var(--sx-dy-b); }
+    }
+    .sx-paper > .sx-section {
+      --sx-dx-a: 0px; --sx-dx-b: 0px;
+      --sx-dy-a: 22px; --sx-dy-b: -22px;
+      animation: sx-panel-drift linear both;
+      animation-timeline: view();
+    }
+    .sx-paper > .sx-section:nth-of-type(odd) {
+      --sx-dx-a: calc(var(--sx-drift) * -1);
+      --sx-dx-b: calc(var(--sx-drift) * 0.5);
+    }
+    .sx-paper > .sx-section:nth-of-type(even) {
+      --sx-dx-a: var(--sx-drift);
+      --sx-dx-b: calc(var(--sx-drift) * -0.5);
+      --sx-dy-a: 30px; --sx-dy-b: -30px;
+    }
+
+    /* layered depth INSIDE the panels, each layer on its own rate */
+    @keyframes sx-rise {
+      from { translate: var(--sx-rise-x, 0px) var(--sx-rise); }
+      to   { translate: calc(var(--sx-rise-x, 0px) * -1) calc(var(--sx-rise) * -1); }
+    }
+    .sx-section__head,
+    .sx-plate, .sx-promise, .sx-faq__item,
+    .sx-area__fig, .sx-travel {
+      animation: sx-rise linear both;
+      animation-timeline: view();
+    }
+    .sx-section__head  { --sx-rise: 16px; }
+    .sx-faq .sx-section__head { animation: none; }
+    .sx-plate          { --sx-rise: calc(14px + var(--sx-i, 0) * 10px); }
+    .sx-promise        { --sx-rise: 10px; }   /* a row of columns moves as one */
+    .sx-faq__item      { --sx-rise: calc(4px + var(--sx-i, 0) * 2px); }
+    .sx-area__fig      { --sx-rise: 28px; --sx-rise-x: 10px; }
+    .sx-travel         { --sx-rise: 12px; }
+
+    /* the cross-axis one: the plate row slides against its own panel, so
+       the gallery reads as a rail moving sideways under vertical scroll */
+    .sx-gallery__grid {
+      --sx-rise: 0px;
+      --sx-rise-x: 2%;
+      animation: sx-rise linear both;
+      animation-timeline: view();
+    }
+
+    /* the hero's empty koi stage gets a counter-drift so the two halves of
+       the hero are visibly on different planes */
+    .sx-hero__scrim {
+      --sx-rise: 0px;
+      --sx-rise-x: 0px;
+      animation: none;
+    }
+  }
+}
+
+/* Nothing above may ever produce a horizontal page scrollbar: the drifts are
+   derived from --sx-gutter, so a panel can never cross the viewport edge.
+   This is the belt and braces. */
+.sx-gallery, .sx-promises, .sx-services { overflow: visible clip; }

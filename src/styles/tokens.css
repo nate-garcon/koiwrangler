@@ -1,0 +1,88 @@
+/* =========================================================================
+   THE KOI WRANGLER — design tokens.  SHARED CONTRACT: read these, don't edit.
+   Direction: night pond (dark, lantern-lit, 3D hero) + clean professional
+   cream content below + Western/saloon typography and brass hardware.
+   ========================================================================= */
+:root {
+  /* --- night water (hero / 3D zone) --- */
+  --night-900: #060d15;
+  --night-800: #0a1420;
+  --night-700: #0e1e2e;
+  --night-600: #13293c;
+  --night-500: #1b3a52;
+
+  /* --- daylight paper (content zone) --- */
+  --paper-000: #ffffff;
+  --paper-050: #faf6ef;
+  --paper-100: #f4ece0;
+  --paper-200: #e8dcc9;
+  --paper-300: #d6c6ab;
+
+  /* --- brass hardware (Western accent) --- */
+  --brass-300: #e8c879;
+  --brass-400: #d8a94a;
+  --brass-500: #b8862a;
+  --brass-600: #a3731f;
+
+  /* --- koi --- */
+  --koi-orange: #e8692a;
+  --koi-red: #c2342a;
+  --koi-white: #f7f3ee;
+  --koi-ink: #1a1512;
+
+  /* --- leather / wood (Western) --- */
+  --leather-500: #6b4425;
+  --leather-700: #432914;
+
+  /* --- semantic --- */
+  --bg: var(--paper-050);
+  --bg-raised: var(--paper-000);
+  --fg: #1d1a16;
+  --fg-muted: #5c5349;
+  --fg-on-dark: var(--paper-100);
+  --fg-on-dark-muted: #9fb3c4;
+  --rule: var(--paper-200);
+  --rule-strong: var(--paper-300);
+  --accent: var(--brass-500);
+  --accent-ink: #2a1d05;
+  --cta: #d4541c;           /* 4.6:1 with white text; koi-orange is 3.2:1 */
+  --cta-ink: #fff;
+  --ok: #3f7a4a;
+  --warn: #9a5b12;
+  --err: #a52f26;
+
+  /* --- type --- */
+  --font-display: 'Rye', 'Bitter', Georgia, serif;   /* saloon lettering */
+  --font-body: 'Bitter', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --step--1: clamp(0.82rem, 0.8rem + 0.1vw, 0.9rem);
+  --step-0:  clamp(1rem, 0.96rem + 0.2vw, 1.09rem);
+  --step-1:  clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
+  --step-2:  clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --step-3:  clamp(1.9rem, 1.5rem + 2vw, 2.9rem);
+  --step-4:  clamp(2.4rem, 1.7rem + 3.6vw, 4.6rem);
+
+  /* --- space / shape --- */
+  --sp-1: 0.375rem;  --sp-2: 0.625rem; --sp-3: 1rem;
+  --sp-4: 1.5rem;    --sp-5: 2.25rem;  --sp-6: 3.5rem;  --sp-7: 5.5rem;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgb(29 26 22 / 0.08), 0 2px 8px rgb(29 26 22 / 0.06);
+  --shadow-md: 0 2px 6px rgb(29 26 22 / 0.1), 0 12px 32px rgb(29 26 22 / 0.1);
+  --shadow-glow: 0 0 0 1px rgb(201 146 47 / 0.35), 0 8px 40px rgb(201 146 47 / 0.14);
+  --maxw: 1140px;
+  --maxw-prose: 62ch;
+
+  /* --- motion --- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-1: 160ms; --dur-2: 280ms; --dur-3: 520ms;
+
+  /* live scroll-dive progress, 0..1, written by main.js */
+  --dive: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-1: 1ms; --dur-2: 1ms; --dur-3: 1ms; }
+}

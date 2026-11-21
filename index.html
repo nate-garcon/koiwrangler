@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Fonts are self-hosted via src/styles/fonts.css — no third-party requests. -->
+  <title>The Koi Wrangler — Pond Cleaning, Done Honest</title>
+  <meta name="description" content="Pond cleaning and safe koi handling, statewide. Upfront prices, fast scheduling, no nonsense. Book online." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230a1420'/><g fill='none' stroke='%23e8c879' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'><path d='M54.4 23.4A24 24 0 1 0 54.4 40.6'/><path d='M54.4 23.4C57.6 21.6 59.4 18.6 60 15'/><path d='M54.4 40.6C57.6 42.4 59.4 45.4 60 49'/><path d='M53.5 32C46 21.5 38 20.5 30 20.5 22.5 20.5 16 25.5 16 33 16 40 22.5 43.5 30 43.5 38 43.5 46.5 42.5 53.5 32Z'/><path d='M28.8 21 32 14.2'/></g><circle cx='24' cy='30' r='2.5' fill='%23e8c879'/></svg>" />
+</head>
+<body>
+  <!-- Fixed 3D pond behind everything. Owned by src/three/ -->
+  <canvas id="pond-canvas" aria-hidden="true"></canvas>
+  <div id="pond-loading" aria-hidden="true"><span></span></div>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- All page content is injected here by src/sections/ -->
+  <main id="main"></main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
