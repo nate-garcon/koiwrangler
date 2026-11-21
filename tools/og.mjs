@@ -23,9 +23,11 @@ const arg = (flag, fallback) => {
   const i = process.argv.indexOf(flag)
   return i > -1 ? process.argv[i + 1] : fallback
 }
-// 0.72 lands in `return`: clear water, the full school back, richest colour.
-// That is the frame that sells the site in a feed.
-const AT = Number(arg('--at', '0.72'))
+// Beat 0 — the hero. A card must carry the brand, the headline and a CTA,
+// and at a 1200x630 viewport the document is a different height, so a
+// mid-story beat lands on whatever section happens to be there (0.72 landed
+// squarely on the booking form). Pass --at to pick a different frame.
+const AT = Number(arg('--at', '0'))
 const URL_ = arg('--url', 'http://127.0.0.1:5173/')
 const OUT = path.resolve(arg('--out', 'public/og.png'))
 
